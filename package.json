@@ -1,0 +1,9 @@
+{
+  "name": "dj-requests",
+  "version": "1.0.0",
+  "description": "DJ song request form with Spotify search",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
