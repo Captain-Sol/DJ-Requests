@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Song Requests for DJ Filtah</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0d0d1a;
+      --surface:   #1a1a2e;
+      --border:    #2d2d50;
+      --accent:    #6d28d9;
+      --accent-hi: #c084fc;
+      --glow:      rgba(192,132,252,0.18);
+      --text:      #f0f0ff;
+      --muted:     #9090b8;
+      --success:   #34d399;
+      --danger:    #f87171;
+      --radius:    12px;
+      --font-ui:   'Space Grotesk', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { height: 100%; }
+
+    body {
+      min-height: 100%;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(109,40,217,0.35) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(192,132,252,0.15) 0%, transparent 60%);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .shell {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 36px 0 28px;
+      text-align: center;
+    }
+
+    .header-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--accent-hi);
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-size: clamp(28px, 7vw, 38px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    header h1 span {
+      color: var(--accent-hi);
+      text-shadow: 0 0 24px rgba(192,132,252,0.6);
+    }
+
+    .header-sub {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── Search bar ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    #searchInput {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      padding: 14px 14px 14px 44px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    #searchInput::placeholder { color: var(--muted); }
+    #searchInput:focus {
+      border-color: var(--accent-hi);
+      box-shadow: 0 0 0 3px rgba(192,132,252,0.2);
+    }
+
+    .search-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(168,85,247,0.35);
+    }
+
+    .search-btn:hover { opacity: 0.9; box-shadow: 0 6px 24px rgba(168,85,247,0.5); }
+    .search-btn:active { transform: scale(0.98); }
+    .search-btn:disabled { background: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
+
+    /* ── Status message ── */
+    #statusMsg {
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin: 10px 0 4px;
+    }
+
+    #statusMsg.error { color: var(--danger); }
+    #statusMsg.ok    { color: var(--success); }
+
+    /* ── Results ── */
+    #results {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .track-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .track-card:hover,
+    .track-card:focus-visible {
+      border-color: var(--accent-hi);
+      background: rgba(109,40,217,0.12);
+      outline: none;
+    }
+
+    .track-card.selected {
+      border-color: var(--accent-hi);
+      background: rgba(192,132,252,0.15);
+      box-shadow: 0 0 0 1px rgba(192,132,252,0.3);
+    }
+
+    .track-art {
+      width: 52px;
+      height: 52px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--border);
+    }
+
+    .track-art-placeholder {
+      width: 52px;
+      height: 52px;
+      border-radius: 6px;
+      background: var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+    }
+
+    .track-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .track-title {
+      font-weight: 600;
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .track-artist {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .track-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .track-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .track-card.selected .track-check {
+      background: var(--accent-hi);
+      border-color: var(--accent-hi);
+    }
+
+    /* ── Submit panel ── */
+    #submitPanel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26,26,46,0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1.5px solid rgba(192,132,252,0.25);
+      padding: 16px;
+      display: none;
+      z-index: 100;
+    }
+
+    #submitPanel.visible { display: block; }
+
+    .submit-selected {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .submit-selected strong { color: var(--text); }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      font-weight: 700;
+      padding: 16px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      box-shadow: 0 4px 24px rgba(192,132,252,0.4);
+      letter-spacing: 0.02em;
+    }
+
+    .submit-btn:hover { opacity: 0.9; box-shadow: 0 6px 28px rgba(192,132,252,0.55); }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { background: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
+
+    /* ── Confirmation screen ── */
+    #confirmScreen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px;
+      min-height: 60vh;
+    }
+
+    #confirmScreen.visible { display: flex; }
+
+    .confirm-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(192,132,252,0.2);
+      border: 2px solid var(--accent-hi);
+      box-shadow: 0 0 32px rgba(192,132,252,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    #confirmScreen h2 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    #confirmScreen p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 280px;
+      margin: 0 auto 28px;
+    }
+
+    .confirm-track {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      text-align: left;
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 28px;
+    }
+
+    .confirm-track .track-title { font-size: 16px; }
+
+    .another-btn {
+      background: transparent;
+      border: 1.5px solid rgba(192,132,252,0.4);
+      color: var(--accent-hi);
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .another-btn:hover {
+      border-color: var(--accent-hi);
+      background: rgba(192,132,252,0.1);
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation: none; opacity: 0.5; }
+    }
+
+    /* ── Divider ── */
+    .divider {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 16px 0;
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <p class="header-label">Request a song</p>
+      <h1>DJ <span>Requests</span></h1>
+      <p class="header-sub">Search for a song, pick the version you want, and submit.</p>
+    </header>
+
+    <!-- Search UI -->
+    <div id="searchUI">
+      <div class="search-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Song title or artist…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="search"
+        />
+      </div>
+      <button class="search-btn" id="searchBtn" onclick="doSearch()">Search Spotify</button>
+
+      <p id="statusMsg"></p>
+      <div id="results"></div>
+    </div>
+
+    <!-- Confirmation screen -->
+    <div id="confirmScreen">
+      <div class="confirm-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2>Request sent</h2>
+      <p>The DJ has your pick. We'll see what we can do.</p>
+      <div class="confirm-track" id="confirmTrackInfo"></div>
+      <button class="another-btn" onclick="resetForm()">Request another song</button>
+    </div>
+  </div>
+
+  <!-- Fixed submit panel -->
+  <div id="submitPanel">
+    <p class="submit-selected" id="submitLabel">Song selected</p>
+    <button class="submit-btn" id="submitBtn" onclick="doSubmit()">Send request</button>
+  </div>
+
+  <script>
+    // ── State ──
+    let selectedTrack = null;
+    let isSearching   = false;
+    let isSubmitting  = false;
+
+    // ── DOM refs ──
+    const searchInput  = document.getElementById('searchInput');
+    const searchBtn    = document.getElementById('searchBtn');
+    const statusMsg    = document.getElementById('statusMsg');
+    const resultsEl    = document.getElementById('results');
+    const submitPanel  = document.getElementById('submitPanel');
+    const submitLabel  = document.getElementById('submitLabel');
+    const submitBtn    = document.getElementById('submitBtn');
+    const confirmScreen = document.getElementById('confirmScreen');
+    const confirmTrack  = document.getElementById('confirmTrackInfo');
+    const searchUI     = document.getElementById('searchUI');
+
+    // ── Search on Enter ──
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    // ── Search ──
+    async function doSearch() {
+      const q = searchInput.value.trim();
+      if (!q || isSearching) return;
+
+      isSearching = true;
+      selectedTrack = null;
+      updateSubmitPanel();
+      setStatus('');
+      resultsEl.innerHTML = '';
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = '<span class="spinner"></span>Searching…';
+
+      try {
+        const res = await fetch(`/.netlify/functions/spotify-search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Search failed');
+        if (!data.tracks || data.tracks.length === 0) {
+          setStatus('No results. Try a different title or artist name.');
+          return;
+        }
+
+        renderResults(data.tracks);
+      } catch (err) {
+        setStatus(err.message || 'Something went wrong. Try again.', 'error');
+      } finally {
+        isSearching = false;
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Search Spotify';
+      }
+    }
+
+    // ── Render results ──
+    function renderResults(tracks) {
+      resultsEl.innerHTML = '';
+      tracks.forEach(track => {
+        const card = document.createElement('div');
+        card.className = 'track-card';
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `Select ${track.name} by ${track.artists}`);
+
+        const artHtml = track.albumArt
+          ? `<img class="track-art" src="${escHtml(track.albumArt)}" alt="" loading="lazy" />`
+          : `<div class="track-art-placeholder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="2"/><path d="M9 9v9m6-11v11"/><rect x="2" y="2" width="20" height="20" rx="3"/></svg></div>`;
+
+        card.innerHTML = `
+          ${artHtml}
+          <div class="track-info">
+            <div class="track-title">${escHtml(track.name)}</div>
+            <div class="track-artist">${escHtml(track.artists)}</div>
+            <div class="track-meta">${escHtml(track.album)} · ${formatDuration(track.duration_ms)}</div>
+          </div>
+          <div class="track-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:0">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        `;
+
+        card.addEventListener('click', () => selectTrack(card, track));
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectTrack(card, track); }
+        });
+
+        resultsEl.appendChild(card);
+      });
+    }
+
+    // ── Select a track ──
+    function selectTrack(card, track) {
+      document.querySelectorAll('.track-card').forEach(c => {
+        c.classList.remove('selected');
+        const svg = c.querySelector('.track-check svg');
+        if (svg) svg.style.opacity = '0';
+      });
+
+      card.classList.add('selected');
+      const svg = card.querySelector('.track-check svg');
+      if (svg) svg.style.opacity = '1';
+
+      selectedTrack = track;
+      updateSubmitPanel();
+    }
+
+    // ── Submit panel ──
+    function updateSubmitPanel() {
+      if (selectedTrack) {
+        submitLabel.innerHTML = `<strong>${escHtml(selectedTrack.name)}</strong> — ${escHtml(selectedTrack.artists)}`;
+        submitPanel.classList.add('visible');
+      } else {
+        submitPanel.classList.remove('visible');
+      }
+    }
+
+    // ── Submit ──
+    async function doSubmit() {
+      if (!selectedTrack || isSubmitting) return;
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span>Sending…';
+
+      try {
+        const res = await fetch('/.netlify/functions/submit-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title:      selectedTrack.name,
+            artist:     selectedTrack.artists,
+            spotifyId:  selectedTrack.id,
+            spotifyUrl: selectedTrack.url
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Submission failed');
+
+        showConfirm();
+      } catch (err) {
+        setStatus(err.message || 'Could not send request. Try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send request';
+      } finally {
+        isSubmitting = false;
+      }
+    }
+
+    // ── Confirmation ──
+    function showConfirm() {
+      searchUI.style.display = 'none';
+      submitPanel.classList.remove('visible');
+      confirmTrack.innerHTML = `
+        <div class="track-title">${escHtml(selectedTrack.name)}</div>
+        <div class="track-artist" style="margin-top:4px;font-size:13px;color:var(--muted)">${escHtml(selectedTrack.artists)}</div>
+        <div class="track-meta" style="margin-top:4px;">${escHtml(selectedTrack.album)}</div>
+      `;
+      confirmScreen.classList.add('visible');
+    }
+
+    function resetForm() {
+      confirmScreen.classList.remove('visible');
+      searchUI.style.display = '';
+      selectedTrack = null;
+      isSubmitting = false;
+      resultsEl.innerHTML = '';
+      searchInput.value = '';
+      setStatus('');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send request';
+      updateSubmitPanel();
+    }
+
+    // ── Helpers ──
+    function setStatus(msg, type = '') {
+      statusMsg.textContent = msg;
+      statusMsg.className = type;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDuration(ms) {
+      if (!ms) return '';
+      const m = Math.floor(ms / 60000);
+      const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+  </script>
+</body>
+</html>
