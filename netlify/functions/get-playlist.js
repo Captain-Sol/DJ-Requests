@@ -84,7 +84,7 @@ exports.handler = async (event) => {
   try {
     const token  = await getAccessToken();
     const tracks = [];
-    let   nextUrl = `${PLAYLIST_URL}/${playlistId}/tracks?limit=100&market=US&fields=next,items(track(name,artists,explicit,duration_ms))`;
+    let   nextUrl = `${PLAYLIST_URL}/${playlistId}/tracks?limit=100&market=US`;
 
     // Paginate up to 300 tracks (3 pages)
     let pages = 0;
