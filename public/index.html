@@ -1,658 +1,2401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Song Requests for DJ Filtah</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg:        #0d0d1a;
-      --surface:   #1a1a2e;
-      --border:    #2d2d50;
-      --accent:    #6d28d9;
-      --accent-hi: #c084fc;
-      --glow:      rgba(192,132,252,0.18);
-      --text:      #f0f0ff;
-      --muted:     #9090b8;
-      --success:   #34d399;
-      --danger:    #f87171;
-      --radius:    12px;
-      --font-ui:   'Space Grotesk', sans-serif;
-      --font-mono: 'Space Mono', monospace;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DJ FILTAH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #0d0d1a;
+    --surface:   #1a1a2e;
+    --surface2:  #12122a;
+    --border:    #2d2d50;
+    --accent:    #6d28d9;
+    --accent-hi: #c084fc;
+    --glow:      rgba(192,132,252,0.18);
+    --text:      #f0f0ff;
+    --muted:     #9090b8;
+    --success:   #34d399;
+    --danger:    #f87171;
+    --warn:      #fbbf24;
+    --radius:    12px;
+  }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(109,40,217,0.35) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(192,132,252,0.15) 0%, transparent 60%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 680px; margin: 0 auto; }
 
-    html { height: 100%; }
+  /* ── Header ── */
+  .top-bar { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 0.25rem; }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: #fff; }
+  h1 span { color: var(--accent-hi); text-shadow: 0 0 20px rgba(192,132,252,0.5); }
+  .subtitle { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 1.5rem; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em; }
 
-    body {
-      min-height: 100%;
-      background: var(--bg);
-      background-image:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(109,40,217,0.35) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(192,132,252,0.15) 0%, transparent 60%);
-      color: var(--text);
-      font-family: var(--font-ui);
-      font-size: 16px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
+  /* ── DJ FILTAH Banner ── */
+  .filtah-banner {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding: 0 0 0.5rem;
+  }
+  .filtah-scene {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 6px;
+    height: 72px;
+    position: relative;
+  }
+  .filtah-title {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(28px, 7vw, 46px);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-shadow:
+      0 0 12px rgba(192,132,252,0.9),
+      0 0 30px rgba(109,40,217,0.7),
+      3px 3px 0 #3b0764,
+      4px 4px 0 #1e0438;
+    image-rendering: pixelated;
+    line-height: 1;
+  }
+  .filtah-title .dj-part { color: var(--accent-hi); }
+  .filtah-subtitle-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
 
-    /* ── Layout ── */
-    .shell {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 16px 80px;
-    }
+  /* 8-bit pixel figures */
+  .pixel-figure {
+    display: inline-block;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+  /* Float animations */
+  @keyframes floatA {
+    0%,100% { transform: translateY(0px); }
+    50%      { transform: translateY(-8px); }
+  }
+  @keyframes floatB {
+    0%,100% { transform: translateY(-4px); }
+    50%      { transform: translateY(4px); }
+  }
+  @keyframes floatC {
+    0%,100% { transform: translateY(-6px); }
+    50%      { transform: translateY(6px); }
+  }
+  @keyframes floatD {
+    0%,100% { transform: translateY(-2px); }
+    50%      { transform: translateY(-10px); }
+  }
+  @keyframes floatE {
+    0%,100% { transform: translateY(2px); }
+    50%      { transform: translateY(-6px); }
+  }
+  .float-a { animation: floatA 2.8s ease-in-out infinite; }
+  .float-b { animation: floatB 3.2s ease-in-out infinite; }
+  .float-c { animation: floatC 2.5s ease-in-out infinite; }
+  .float-d { animation: floatD 3.6s ease-in-out infinite; }
+  .float-e { animation: floatE 4.1s ease-in-out infinite; }
+  .glow-purple { filter: drop-shadow(0 0 6px rgba(192,132,252,0.8)); }
+  .glow-green  { filter: drop-shadow(0 0 6px rgba(52,211,153,0.8)); }
+  .glow-amber  { filter: drop-shadow(0 0 6px rgba(251,191,36,0.8)); }
+  .menu-btn {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+    padding: 6px 9px; font-size: 16px; color: var(--muted); line-height: 1;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+  }
+  .menu-btn:hover { background: #2a2a45; border-color: var(--accent); color: var(--accent-hi); }
 
-    /* ── Header ── */
-    header {
-      padding: 36px 0 28px;
-      text-align: center;
-    }
+  /* ── Cards ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+  .card.warn { border-color: rgba(251,191,36,0.4); background: rgba(26,20,10,0.8); }
+  .card.denied-card { border-color: rgba(248,113,113,0.35); background: rgba(26,10,10,0.8); }
+  .card.pick-card { border-color: var(--accent); box-shadow: 0 0 24px rgba(109,40,217,0.2); }
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; font-weight: 600; font-family: 'Space Mono', monospace; }
+  .section-title.warn { color: var(--warn); }
+  .section-title.denied { color: var(--danger); }
 
-    .header-label {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      color: var(--accent-hi);
-      margin-bottom: 10px;
-    }
+  /* ── Collapsible ── */
+  .collapsible-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .collapsible-header .section-title { margin-bottom: 0; }
+  .collapse-arrow { font-size: 11px; color: var(--muted); transition: transform 0.2s; }
+  .collapse-arrow.open { transform: rotate(180deg); }
+  .collapsible-body { overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s; }
+  .collapsible-body.closed { max-height: 0 !important; opacity: 0; pointer-events: none; }
 
-    header h1 {
-      font-size: clamp(28px, 7vw, 38px);
-      font-weight: 700;
-      line-height: 1.1;
-      color: #ffffff;
-    }
+  /* ── Form elements ── */
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 10px; }
+  label:first-of-type { margin-top: 0; }
+  input[type=text], textarea, select {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; font-family: inherit; outline: none;
+    background: var(--surface2); color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input[type=text]:focus, textarea:focus, select:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(109,40,217,0.2);
+  }
+  select option { background: var(--surface); color: var(--text); }
+  textarea { height: 80px; resize: vertical; font-family: inherit; font-size: 13px; }
+  textarea.mono { font-family: 'Space Mono', monospace; font-size: 12px; height: 100px; }
+  .row { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; flex-wrap: wrap; }
+  .row input, .row select { flex: 1; min-width: 100px; }
+  button {
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface2); color: var(--text);
+    font-size: 13px; cursor: pointer; font-family: inherit; white-space: nowrap;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+  }
+  button:hover:not(:disabled) { background: #2a2a45; border-color: var(--accent); color: var(--accent-hi); }
+  button:active:not(:disabled) { transform: scale(0.98); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+  button.primary:hover:not(:disabled) { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+  button.sm { padding: 4px 10px; font-size: 12px; }
+  button.approve { border-color: rgba(52,211,153,0.4); color: var(--success); }
+  button.approve:hover:not(:disabled) { background: rgba(52,211,153,0.1); border-color: var(--success); }
+  button.remove { border-color: rgba(248,113,113,0.35); color: var(--danger); }
+  button.remove:hover:not(:disabled) { background: rgba(248,113,113,0.1); }
+  button.deny-btn { border-color: rgba(248,113,113,0.35); color: var(--danger); }
+  button.deny-btn:hover:not(:disabled) { background: rgba(248,113,113,0.1); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.5; opacity: 0.7; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+  .tab-row { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .tab { flex: 1; padding: 8px; font-size: 13px; background: var(--surface2); color: var(--muted); border: none; cursor: pointer; border-right: 1px solid var(--border); transition: background 0.1s, color 0.1s; }
+  .tab:last-child { border-right: none; }
+  .tab.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
-    header h1 span {
-      color: var(--accent-hi);
-      text-shadow: 0 0 24px rgba(192,132,252,0.6);
-    }
+  /* ── Filter mode SLIDER ── */
+  .filter-slider-wrap {
+    position: relative; height: 40px; border-radius: 8px; display: flex;
+    align-items: stretch; border: 1px solid var(--border); overflow: hidden; margin-bottom: 8px;
+  }
+  .filter-slider-track {
+    position: absolute; inset: 0; display: flex; align-items: stretch;
+    background: var(--surface2);
+  }
+  .filter-pill {
+    position: absolute; top: 3px; bottom: 3px; border-radius: 6px;
+    transition: left 0.22s cubic-bezier(.4,0,.2,1), width 0.22s cubic-bezier(.4,0,.2,1), background 0.22s;
+    pointer-events: none; z-index: 1;
+  }
+  .filter-pill.cleanest  { background: #16a34a; }
+  .filter-pill.somegrime { background: #d97706; }
+  .filter-pill.nofilter  { background: #dc2626; }
+  .filter-option {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; cursor: pointer; z-index: 2; position: relative;
+    color: var(--muted); transition: color 0.2s; user-select: none; gap: 4px;
+    border-right: 1px solid var(--border);
+  }
+  .filter-option:last-child { border-right: none; }
+  .filter-option.active { color: #fff; }
+  .mode-desc { font-size: 12px; color: var(--muted); padding: 8px 10px; background: var(--surface2); border-radius: 6px; line-height: 1.5; border: 1px solid var(--border); }
 
-    .header-sub {
-      margin-top: 8px;
-      font-size: 14px;
-      color: var(--muted);
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+  /* ── Vibe selector ── */
+  .vibe-selector { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+  .vibe-btn { flex: 1; padding: 8px 6px; font-size: 12px; font-weight: 600; background: var(--surface2); color: var(--muted); border: none; border-right: 1px solid var(--border); cursor: pointer; text-align: center; transition: background 0.1s, color 0.1s; }
+  .vibe-btn:last-child { border-right: none; }
+  .vibe-btn.active { background: var(--accent); color: #fff; }
 
-    /* ── Search bar ── */
-    .search-wrap {
-      position: relative;
-      margin-bottom: 12px;
-    }
+  /* ── Energy badges ── */
+  .badge-energy-high { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+  .badge-energy-mid  { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+  .badge-energy-slow { background: rgba(192,132,252,0.15); color: var(--accent-hi); border: 1px solid rgba(192,132,252,0.3); }
+  .badge-energy-unknown { background: rgba(144,144,184,0.1); color: var(--muted); border: 1px solid var(--border); }
 
-    .search-wrap svg {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      pointer-events: none;
-    }
+  /* ── Song rows ── */
+  .song-row {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-radius: 8px; background: var(--surface2); font-size: 13px;
+    border: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .song-row.denied-row { background: rgba(248,113,113,0.05); border-color: rgba(248,113,113,0.3); }
+  .song-row .sname { font-weight: 600; color: var(--text); flex: 1; min-width: 100px; }
+  .song-row .sartist { color: var(--muted); font-size: 12px; min-width: 70px; }
+  .song-row .sreason { font-size: 11px; color: var(--warn); flex: 2; min-width: 100px; line-height: 1.4; }
+  .song-row .sreason.denied { color: var(--danger); }
+  .review-meta { width: 100%; margin-top: 4px; font-size: 11px; color: var(--muted); line-height: 1.45; padding-left: 2px; opacity: 0.8; }
+  .review-meta strong { color: var(--text); opacity: 0.9; }
+  .discrepancy { color: var(--warn); opacity: 0.85; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .badge-lyrics { background: rgba(52,211,153,0.15); color: var(--success); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-ok { background: rgba(144,144,184,0.1); color: var(--muted); border: 1px solid var(--border); }
+  .deny-count-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--danger); color: #fff; font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  #song-list, #flagged-list, #denied-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
 
-    #searchInput {
-      width: 100%;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-family: var(--font-ui);
-      font-size: 16px;
-      padding: 14px 14px 14px 44px;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
+  /* ── Pick display ── */
+  .pick-display {
+    background: var(--surface2); border-radius: 10px; padding: 1.75rem 1.25rem;
+    text-align: center; min-height: 100px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border);
+  }
+  .pick-song { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.2; text-shadow: 0 0 30px rgba(192,132,252,0.4); }
+  .pick-artist { font-size: 15px; color: var(--accent-hi); }
+  .pick-empty { font-size: 13px; color: var(--muted); }
+  .spotify-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-top: 8px; padding: 8px 14px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    text-decoration: none; font-size: 13px; font-weight: 600;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .spotify-link:hover { background: #2a2a45; border-color: var(--accent); color: var(--accent-hi); }
+  #history-list { display: flex; flex-direction: column; gap: 4px; max-height: 130px; overflow-y: auto; }
+  .history-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .hs { color: var(--text); font-weight: 500; flex: 1; }
+  .history-item .ha { color: var(--muted); }
+  #checking-bar { display: none; font-size: 12px; color: var(--muted); margin-top: 8px; align-items: center; gap: 8px; }
+  #error-box { display: none; font-size: 12px; color: var(--danger); background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-family: 'Space Mono', monospace; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+  .key-ok { font-size: 12px; color: var(--success); margin-left: 8px; display: none; }
+  .stat { font-size: 13px; color: var(--muted); }
+  .stat strong { color: var(--text); }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--accent-hi); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .divider { height: 1px; background: var(--border); margin: 10px 0; }
+  .status-ok { font-size: 12px; color: var(--success); margin-top: 6px; }
+  .status-err { font-size: 12px; color: var(--danger); margin-top: 6px; }
+  .pool-empty-vibe { font-size: 13px; color: var(--muted); padding: 8px 0; }
+  .toggle-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .toggle-label { font-size: 13px; color: var(--muted); }
+  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 20px; transition: 0.2s; }
+  .toggle-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider:before { background: #fff; }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+  .pick-stats { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
-    #searchInput::placeholder { color: var(--muted); }
-    #searchInput:focus {
-      border-color: var(--accent-hi);
-      box-shadow: 0 0 0 3px rgba(192,132,252,0.2);
-    }
+  /* ── Auto-fetch indicator ── */
+  .autofetch-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .autofetch-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background 0.3s; }
+  .autofetch-dot.active { background: var(--success); animation: pulse 2s ease-in-out infinite; }
+  .autofetch-dot.fetching { background: var(--warn); animation: none; }
 
-    .search-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      font-family: var(--font-ui);
-      font-size: 15px;
-      font-weight: 600;
-      padding: 14px;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
-      box-shadow: 0 4px 20px rgba(168,85,247,0.35);
-    }
+  /* ── Energy number badge ── */
+  .energy-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; border-radius: 4px; padding: 0 4px;
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    flex-shrink: 0; image-rendering: pixelated;
+  }
+  .energy-num.high  { background: rgba(248,113,113,0.18); color: #f87171; border: 1px solid rgba(248,113,113,0.4); }
+  .energy-num.mid   { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
+  .energy-num.slow  { background: rgba(96,165,250,0.15);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.4); }
+  .energy-num.unknown { background: rgba(144,144,184,0.1); color: var(--muted); border: 1px solid var(--border); }
 
-    .search-btn:hover { opacity: 0.9; box-shadow: 0 6px 24px rgba(168,85,247,0.5); }
-    .search-btn:active { transform: scale(0.98); }
-    .search-btn:disabled { background: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
+  /* ── Pixel Record Suggestion Panel ── */
+  .record-panel-wrap {
+    position: fixed; top: 90px; left: 12px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  /* ── Auto-fetch disk (right side) ── */
+  .autofetch-disk-outer {
+    position: fixed; top: 90px; right: 12px; z-index: 100;
+    display: flex; flex-direction: row; align-items: flex-start; gap: 14px;
+  }
+  /* Sub-column: light switch stacked label */
+  .ls-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .af-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  @media (max-width: 800px) {
+    .record-panel-wrap { position: static; margin: 0 auto 1rem; align-items: center; }
+    .autofetch-disk-outer { position: static; margin: 0 auto 1rem; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  }
 
-    /* ── Status message ── */
-    #statusMsg {
-      min-height: 20px;
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-      margin: 10px 0 4px;
-    }
+  /* ── Auto-fetch disk ── */
+  .autofetch-disk-wrap {
+    width: 128px; height: 128px; cursor: pointer; position: relative;
+    filter: drop-shadow(0 0 12px rgba(248,113,113,0.8));
+    transition: filter 0.3s;
+  }
+  .autofetch-disk-wrap:hover { filter: drop-shadow(0 0 18px rgba(192,132,252,0.8)); }
+  .autofetch-disk-wrap.af-active {
+    filter: drop-shadow(0 0 14px rgba(52,211,153,0.9));
+  }
+  .autofetch-disk-svg { display: block; }
+  @keyframes spinDisk { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .af-spinning { animation: spinDisk 3s linear infinite; }
+  .af-paused { animation-play-state: paused; }
+  /* Label overlaid on center of disk */
+  .autofetch-disk-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.05em; color: #fff;
+    text-align: center; line-height: 1.3;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    pointer-events: none;
+    transition: color 0.3s;
+  }
+  .autofetch-disk-label.af-active { color: #fff; }
+  .record-svg-wrap {
+    width: 128px; height: 128px; cursor: pointer; position: relative;
+    filter: drop-shadow(0 0 14px rgba(192,132,252,0.5));
+  }
+  .record-svg-wrap:hover { filter: drop-shadow(0 0 22px rgba(192,132,252,0.9)); }
+  @keyframes spinRecord { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .record-spinning { animation: spinRecord 4s linear infinite; }
+  .record-paused { animation-play-state: paused; }
 
-    #statusMsg.error { color: var(--danger); }
-    #statusMsg.ok    { color: var(--success); }
+  .suggest-dropdown {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 8px; width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    display: none;
+  }
+  .suggest-dropdown.open { display: block; }
+  .suggest-title {
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+    color: var(--accent-hi); text-transform: uppercase; margin-bottom: 6px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .suggest-item {
+    padding: 6px 8px; border-radius: 6px; cursor: pointer;
+    transition: background 0.1s; margin-bottom: 3px;
+  }
+  .suggest-item:hover { background: rgba(109,40,217,0.2); }
+  .suggest-item:last-child { margin-bottom: 0; }
+  .suggest-song { font-size: 12px; font-weight: 600; color: var(--text); }
+  .suggest-artist { font-size: 11px; color: var(--muted); }
+  .suggest-reason { font-size: 10px; color: var(--accent-hi); margin-top: 2px; opacity: 0.8; }
+  .suggest-adding { opacity: 0.5; pointer-events: none; }
+  .suggest-footer { font-size: 10px; color: var(--muted); text-align: center; margin-top: 6px; padding-top: 4px; border-top: 1px solid var(--border); }
+  .suggest-loading { font-size: 11px; color: var(--muted); text-align: center; padding: 10px 0; }
+  .suggest-energy { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: middle; flex-shrink:0; }
 
-    /* ── Results ── */
-    #results {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 16px;
-    }
+  .suggest-energy.high { background: #f87171; }
+  .suggest-energy.mid  { background: #fbbf24; }
+  .suggest-energy.slow { background: #60a5fa; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .autofetch-label { font-size: 12px; color: var(--muted); }
 
-    .track-card {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
+  /* ── Timestamp ── */
+  .song-ts {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--muted); opacity: 0.6;
+    white-space: nowrap; flex-shrink: 0;
+    margin-left: auto;
+  }
 
-    .track-card:hover,
-    .track-card:focus-visible {
-      border-color: var(--accent-hi);
-      background: rgba(109,40,217,0.12);
-      outline: none;
-    }
+  /* ── Energy left border on rows ── */
+  .song-row { border-left: 3px solid transparent; }
+  .song-row.energy-high { border-left-color: #f87171; }
+  .song-row.energy-mid  { border-left-color: #fbbf24; }
+  .song-row.energy-slow { border-left-color: #60a5fa; }
 
-    .track-card.selected {
-      border-color: var(--accent-hi);
-      background: rgba(192,132,252,0.15);
-      box-shadow: 0 0 0 1px rgba(192,132,252,0.3);
-    }
+  /* ── Played state ── */
+  .song-row.played { opacity: 0.42; }
+  .song-row.played .sname { text-decoration: line-through; }
+  .btn-played { font-size: 14px; background: none; border: none; cursor: pointer; padding: 2px 4px; color: var(--muted); line-height:1; }
+  .btn-played:hover { color: var(--success); background: none; border: none; }
+  .btn-played.is-played { color: var(--success); }
 
-    .track-art {
-      width: 52px;
-      height: 52px;
-      border-radius: 6px;
-      object-fit: cover;
-      flex-shrink: 0;
-      background: var(--border);
-    }
+  /* ── Pool sort/filter bar ── */
+  .pool-controls {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .pool-controls select {
+    width: auto; padding: 4px 8px; font-size: 12px; flex: none;
+  }
+  .pool-controls label { margin: 0; font-size: 12px; color: var(--muted); }
 
-    .track-art-placeholder {
-      width: 52px;
-      height: 52px;
-      border-radius: 6px;
-      background: var(--border);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-    }
+  /* ── Bulk import ── */
+  .bulk-toggle-btn {
+    font-size: 12px; color: var(--muted); background: none; border: none;
+    cursor: pointer; padding: 2px 6px; border-radius: 4px; text-decoration: underline;
+  }
+  .bulk-toggle-btn:hover { color: var(--accent-hi); background: none; border: none; }
+  .bulk-import-area { margin-top: 10px; display: none; }
+  .bulk-import-area.open { display: block; }
+  .bulk-hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; opacity: 0.75; }
 
-    .track-info {
-      flex: 1;
-      min-width: 0;
-    }
+  /* ── Pixel-art light switch (clear scan memory) ── */
+  .lightswitch-wrap {
+    width: 128px; height: 128px; cursor: pointer; position: relative;
+    filter: drop-shadow(0 0 6px rgba(120,120,160,0.5));
+    transition: filter 0.3s;
+  }
+  .lightswitch-wrap:hover {
+    filter: drop-shadow(0 0 10px rgba(180,160,255,0.7));
+  }
+  .lightswitch-wrap.ls-active {
+    filter: drop-shadow(0 0 16px rgba(251,191,36,0.95));
+  }
+  .ls-col-label {
+    font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
+    color: var(--muted); text-align: center; line-height: 1.3;
+    transition: color 0.3s;
+  }
+  .lightswitch-wrap.ls-active + .ls-col-label { color: #fbbf24; }
+  @keyframes shimmer {
+    0%   { filter: drop-shadow(0 0 6px rgba(120,120,160,0.5)); }
+    25%  { filter: drop-shadow(0 0 22px rgba(251,191,36,1)); }
+    55%  { filter: drop-shadow(0 0 28px rgba(251,191,36,0.85)); }
+    80%  { filter: drop-shadow(0 0 14px rgba(251,191,36,0.4)); }
+    100% { filter: drop-shadow(0 0 6px rgba(120,120,160,0.5)); }
+  }
+  .ls-shimmer { animation: shimmer 0.75s ease-out forwards; }
 
-    .track-title {
-      font-weight: 600;
-      font-size: 15px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--text);
-    }
-
-    .track-artist {
-      font-size: 13px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-top: 2px;
-    }
-
-    .track-meta {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .track-check {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .track-card.selected .track-check {
-      background: var(--accent-hi);
-      border-color: var(--accent-hi);
-    }
-
-    /* ── Submit panel ── */
-    #submitPanel {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(26,26,46,0.96);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-top: 1.5px solid rgba(192,132,252,0.25);
-      padding: 16px;
-      display: none;
-      z-index: 100;
-    }
-
-    #submitPanel.visible { display: block; }
-
-    .submit-selected {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .submit-selected strong { color: var(--text); }
-
-    .submit-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      font-family: var(--font-ui);
-      font-size: 16px;
-      font-weight: 700;
-      padding: 16px;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
-      box-shadow: 0 4px 24px rgba(192,132,252,0.4);
-      letter-spacing: 0.02em;
-    }
-
-    .submit-btn:hover { opacity: 0.9; box-shadow: 0 6px 28px rgba(192,132,252,0.55); }
-    .submit-btn:active { transform: scale(0.98); }
-    .submit-btn:disabled { background: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
-
-    /* ── Confirmation screen ── */
-    #confirmScreen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 60px 24px;
-      min-height: 60vh;
-    }
-
-    #confirmScreen.visible { display: flex; }
-
-    .confirm-icon {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: rgba(192,132,252,0.2);
-      border: 2px solid var(--accent-hi);
-      box-shadow: 0 0 32px rgba(192,132,252,0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 24px;
-    }
-
-    #confirmScreen h2 {
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    #confirmScreen p {
-      color: var(--muted);
-      font-size: 15px;
-      max-width: 280px;
-      margin: 0 auto 28px;
-    }
-
-    .confirm-track {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      text-align: left;
-      width: 100%;
-      max-width: 320px;
-      margin-bottom: 28px;
-    }
-
-    .confirm-track .track-title { font-size: 16px; }
-
-    .another-btn {
-      background: transparent;
-      border: 1.5px solid rgba(192,132,252,0.4);
-      color: var(--accent-hi);
-      border-radius: var(--radius);
-      font-family: var(--font-ui);
-      font-size: 15px;
-      font-weight: 600;
-      padding: 12px 28px;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-    }
-
-    .another-btn:hover {
-      border-color: var(--accent-hi);
-      background: rgba(192,132,252,0.1);
-    }
-
-    /* ── Loading spinner ── */
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (prefers-reduced-motion: reduce) {
-      .spinner { animation: none; opacity: 0.5; }
-    }
-
-    /* ── Divider ── */
-    .divider {
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      margin: 16px 0;
-      position: relative;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 38%;
-      height: 1px;
-      background: var(--border);
-    }
-    .divider::before { left: 0; }
-    .divider::after  { right: 0; }
-  </style>
+  /* ── URL row collapsible ── */
+  .url-collapse-btn {
+    font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer;
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .url-collapse-btn:hover { color: var(--accent-hi); background: rgba(109,40,217,0.15); border: none; }
+</style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <p class="header-label">Request a song</p>
-      <h1>DJ <span>Requests</span></h1>
-      <p class="header-sub">Search for a song, pick the version you want, and submit.</p>
-    </header>
+<!-- ── PIXEL RECORD SUGGESTION PANEL ── -->
+<div class="record-panel-wrap" id="record-panel-wrap">
+  <div class="record-svg-wrap" onclick="toggleSuggestDropdown()" title="DJ Suggestions">
+    <!-- 32-bit pixel vinyl record SVG -->
+    <svg id="record-svg" class="record-spinning" width="128" height="128" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated; display:block;">
+      <!-- Outer vinyl ring -->
+      <rect x="3" y="1" width="14" height="2" fill="#1a1a2e"/>
+      <rect x="1" y="3" width="2" height="14" fill="#1a1a2e"/>
+      <rect x="17" y="3" width="2" height="14" fill="#1a1a2e"/>
+      <rect x="3" y="17" width="14" height="2" fill="#1a1a2e"/>
+      <rect x="2" y="2" width="1" height="1" fill="#1a1a2e"/>
+      <rect x="17" y="2" width="1" height="1" fill="#1a1a2e"/>
+      <rect x="2" y="17" width="1" height="1" fill="#1a1a2e"/>
+      <rect x="17" y="17" width="1" height="1" fill="#1a1a2e"/>
+      <!-- Vinyl grooves (dark rings) -->
+      <rect x="3" y="1" width="14" height="18" fill="#111127" rx="0"/>
+      <rect x="4" y="2" width="12" height="16" fill="#1a1a2e"/>
+      <rect x="5" y="3" width="10" height="14" fill="#111127"/>
+      <rect x="6" y="4" width="8" height="12" fill="#1a1a2e"/>
+      <!-- Label (center colored circle) -->
+      <rect x="7" y="7" width="6" height="6" fill="#6d28d9"/>
+      <rect x="8" y="6" width="4" height="1" fill="#6d28d9"/>
+      <rect x="8" y="13" width="4" height="1" fill="#6d28d9"/>
+      <rect x="6" y="8" width="1" height="4" fill="#6d28d9"/>
+      <rect x="13" y="8" width="1" height="4" fill="#6d28d9"/>
+      <!-- Label highlight -->
+      <rect x="8" y="7" width="4" height="3" fill="#7c3aed"/>
+      <!-- Center hole -->
+      <rect x="9" y="9" width="2" height="2" fill="#0d0d1a"/>
+      <!-- Groove shimmer lines -->
+      <rect x="3" y="2" width="1" height="1" fill="#2d2d50"/>
+      <rect x="16" y="4" width="1" height="1" fill="#2d2d50"/>
+      <rect x="4" y="16" width="1" height="1" fill="#2d2d50"/>
+      <rect x="15" y="3" width="1" height="1" fill="#c084fc" opacity="0.4"/>
+      <rect x="4" y="5" width="1" height="1" fill="#c084fc" opacity="0.3"/>
+      <rect x="15" y="14" width="1" height="1" fill="#c084fc" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="suggest-dropdown" id="suggest-dropdown">
+    <div class="suggest-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>&#9836; Next Drop</span>
+      <button onclick="fetchSuggestions()" title="Refresh suggestions" style="background:none;border:none;cursor:pointer;color:var(--accent-hi);font-size:14px;padding:0 2px;line-height:1;" id="suggest-refresh-btn">&#8635;</button>
+    </div>
+    <div id="suggest-list"><div class="suggest-loading">Generating suggestions…</div></div>
+    <div class="suggest-footer" id="suggest-footer">Updates every 2 min</div>
+  </div>
 
-    <!-- Search UI -->
-    <div id="searchUI">
-      <div class="search-wrap">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+</div>
+
+<!-- Auto-fetch disk — fixed right side -->
+<div class="autofetch-disk-outer">
+
+  <!-- Left sub-column: light switch -->
+  <div class="ls-col">
+    <div class="lightswitch-wrap" id="lightswitch-wrap" onclick="clickLightSwitch()" title="Clear scan memory">
+      <svg id="lightswitch-svg" width="128" height="128" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated; display:block;">
+        <!-- switch plate body -->
+        <rect x="4" y="2" width="12" height="16" fill="#2d2d50"/>
+        <!-- plate bevel top -->
+        <rect x="4" y="2" width="12" height="1" fill="#3d3d60"/>
+        <rect x="4" y="2" width="1" height="16" fill="#3d3d60"/>
+        <!-- plate bevel bottom/right shadow -->
+        <rect x="4" y="17" width="12" height="1" fill="#1a1a30"/>
+        <rect x="15" y="2" width="1" height="16" fill="#1a1a30"/>
+        <!-- plate screws top/bottom center -->
+        <rect x="9" y="3" width="2" height="1" fill="#1a1a30"/>
+        <rect x="9" y="16" width="2" height="1" fill="#1a1a30"/>
+        <!-- rocker recess -->
+        <rect x="6" y="5" width="8" height="10" fill="#1a1a2e"/>
+        <!-- rocker toggle — top half (UP = ON side) -->
+        <rect x="7" y="6" width="6" height="4" fill="#4a4a70" id="ls-rocker-top"/>
+        <!-- rocker toggle — bottom half (DOWN = OFF side, currently engaged) -->
+        <rect x="7" y="10" width="6" height="4" fill="#6d6da0" id="ls-rocker-bot"/>
+        <!-- rocker center divider line -->
+        <rect x="7" y="9" width="6" height="1" fill="#1a1a2e"/>
+        <!-- rocker highlight when bottom engaged -->
+        <rect x="8" y="10" width="4" height="1" fill="#8080b8" id="ls-highlight"/>
+        <!-- indicator light — dim by default -->
+        <rect x="9" y="14" width="2" height="1" fill="#3d3d50" id="ls-indicator"/>
+        <!-- pixel sparkles (hidden by default, shown on shimmer) -->
+        <rect x="3" y="3" width="1" height="1" fill="#fbbf24" opacity="0" id="ls-spark1"/>
+        <rect x="16" y="5" width="1" height="1" fill="#fbbf24" opacity="0" id="ls-spark2"/>
+        <rect x="3" y="15" width="1" height="1" fill="#fbbf24" opacity="0" id="ls-spark3"/>
+        <rect x="16" y="13" width="1" height="1" fill="#fbbf24" opacity="0" id="ls-spark4"/>
+      </svg>
+    </div>
+    <span style="font-family:'Space Mono',monospace; font-size:9px; font-weight:700; color:var(--muted); text-align:center; line-height:1.3;">CLEAR<br>CACHE</span>
+  </div>
+
+  <!-- Right sub-column: auto-fetch disk + interval -->
+  <div class="af-col">
+    <div class="autofetch-disk-wrap" id="autofetch-disk-wrap" onclick="clickAutofetchDisk()" title="Toggle auto-fetch">
+      <svg class="autofetch-disk-svg af-spinning" id="autofetch-disk-svg" width="128" height="128" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated; display:block;">
+        <!-- outer vinyl ring -->
+        <rect x="3" y="1" width="14" height="2" fill="#1a1a2e"/>
+        <rect x="1" y="3" width="2" height="14" fill="#1a1a2e"/>
+        <rect x="17" y="3" width="2" height="14" fill="#1a1a2e"/>
+        <rect x="3" y="17" width="14" height="2" fill="#1a1a2e"/>
+        <!-- grooves -->
+        <rect x="3" y="1" width="14" height="18" fill="#111127"/>
+        <rect x="4" y="2" width="12" height="16" fill="#1a1a2e"/>
+        <rect x="5" y="3" width="10" height="14" fill="#111127"/>
+        <rect x="6" y="4" width="8" height="12" fill="#1a1a2e"/>
+        <!-- center label — red by default, green when active -->
+        <rect x="7" y="7" width="6" height="6" fill="#f87171" id="af-disk-label"/>
+        <rect x="8" y="6" width="4" height="1" fill="#f87171" id="af-disk-top"/>
+        <rect x="8" y="13" width="4" height="1" fill="#f87171" id="af-disk-bot"/>
+        <rect x="6" y="8" width="1" height="4" fill="#f87171" id="af-disk-lft"/>
+        <rect x="13" y="8" width="1" height="4" fill="#f87171" id="af-disk-rgt"/>
+        <!-- label highlight -->
+        <rect x="8" y="7" width="4" height="3" fill="#f87171" opacity="0.6" id="af-disk-hi"/>
+        <!-- center hole -->
+        <rect x="9" y="9" width="2" height="2" fill="#0d0d1a"/>
+        <!-- shimmer -->
+        <rect x="3" y="2" width="1" height="1" fill="#2d2d50"/>
+        <rect x="16" y="4" width="1" height="1" fill="#2d2d50"/>
+        <rect x="4" y="16" width="1" height="1" fill="#2d2d50"/>
+      </svg>
+      <div class="autofetch-disk-label" id="autofetch-disk-label">AUTO<br>OFF</div>
+    </div>
+    <!-- interval selector shown when active -->
+    <select id="autofetch-interval" onchange="restartAutoFetch()" style="display:none; width:110px; padding:4px 8px; font-size:12px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:6px; text-align:center;">
+      <option value="15">every 15s</option>
+      <option value="30" selected>every 30s</option>
+      <option value="60">every 60s</option>
+      <option value="120">every 2min</option>
+    </select>
+  </div>
+
+</div>
+
+<div class="container">
+
+  <!-- DJ FILTAH Banner -->
+  <div class="filtah-banner">
+    <div class="filtah-scene">
+
+      <!-- LEFT BODYGUARD 1 — Secret Service, charcoal suit, squared black shades, earpiece -->
+      <span class="pixel-figure float-d glow-amber" style="margin-right:3px; margin-bottom:8px;">
+        <svg width="32" height="64" viewBox="0 0 8 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+          <!-- head -->
+          <rect x="2" y="0" width="4" height="4" fill="#c4956a"/>
+          <!-- squared black shades — thick bar, no lens gap -->
+          <rect x="2" y="1" width="4" height="2" fill="#0a0a0a"/>
+          <rect x="2" y="1" width="2" height="2" fill="#111111"/>
+          <rect x="4" y="1" width="2" height="2" fill="#111111"/>
+          <!-- shades frame edge highlight -->
+          <rect x="2" y="1" width="4" height="1" fill="#1a1a1a"/>
+          <!-- earpiece wire right side -->
+          <rect x="6" y="2" width="1" height="1" fill="#d1d5db"/>
+          <rect x="6" y="3" width="1" height="2" fill="#9ca3af"/>
+          <rect x="6" y="5" width="1" height="1" fill="#d1d5db"/>
+          <!-- mouth / jaw -->
+          <rect x="3" y="3" width="2" height="1" fill="#a07850"/>
+          <!-- charcoal suit body -->
+          <rect x="1" y="4" width="6" height="6" fill="#1f2937"/>
+          <!-- suit center stripe / lapel division -->
+          <rect x="3" y="4" width="2" height="6" fill="#111827"/>
+          <!-- lapels (dark charcoal, slightly lighter) -->
+          <rect x="1" y="4" width="2" height="3" fill="#374151"/>
+          <rect x="5" y="4" width="2" height="3" fill="#374151"/>
+          <!-- star/badge pin on left lapel -->
+          <rect x="2" y="5" width="1" height="1" fill="#fbbf24"/>
+          <!-- tie — narrow black -->
+          <rect x="3" y="5" width="2" height="4" fill="#0a0a0a"/>
+          <!-- shoulder strap / lanyard diagonal -->
+          <rect x="2" y="4" width="1" height="1" fill="#6b7280"/>
+          <rect x="3" y="5" width="1" height="1" fill="#6b7280"/>
+          <rect x="4" y="6" width="1" height="1" fill="#6b7280"/>
+          <rect x="5" y="7" width="1" height="1" fill="#6b7280"/>
+          <!-- arms — suit sleeves -->
+          <rect x="0" y="4" width="1" height="5" fill="#1f2937"/>
+          <rect x="7" y="4" width="1" height="5" fill="#1f2937"/>
+          <!-- hands -->
+          <rect x="0" y="9" width="1" height="1" fill="#c4956a"/>
+          <rect x="7" y="9" width="1" height="1" fill="#c4956a"/>
+          <!-- legs — dark trousers -->
+          <rect x="1" y="10" width="2" height="4" fill="#111827"/>
+          <rect x="5" y="10" width="2" height="4" fill="#111827"/>
+          <!-- shoes — black oxford -->
+          <rect x="0" y="14" width="3" height="2" fill="#0a0a0a"/>
+          <rect x="5" y="14" width="3" height="2" fill="#0a0a0a"/>
         </svg>
-        <input
-          type="search"
-          id="searchInput"
-          placeholder="Song title or artist…"
-          autocomplete="off"
-          autocorrect="off"
-          spellcheck="false"
-          enterkeyhint="search"
-        />
-      </div>
-      <button class="search-btn" id="searchBtn" onclick="doSearch()">Search Spotify</button>
+      </span>
 
-      <p id="statusMsg"></p>
-      <div id="results"></div>
+      <!-- LEFT BODYGUARD 2 — Secret Service, slightly taller, earpiece other side -->
+      <span class="pixel-figure float-b glow-green" style="margin-right:5px; margin-bottom:2px;">
+        <svg width="28" height="60" viewBox="0 0 7 15" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+          <!-- head -->
+          <rect x="1" y="0" width="5" height="4" fill="#d4a574"/>
+          <!-- squared black shades — full-width block -->
+          <rect x="1" y="1" width="5" height="2" fill="#0a0a0a"/>
+          <rect x="1" y="1" width="2" height="2" fill="#0f0f0f"/>
+          <rect x="4" y="1" width="2" height="2" fill="#0f0f0f"/>
+          <rect x="3" y="1" width="1" height="2" fill="#1a1a1a"/>
+          <!-- earpiece left side -->
+          <rect x="0" y="2" width="1" height="1" fill="#d1d5db"/>
+          <rect x="0" y="3" width="1" height="2" fill="#9ca3af"/>
+          <rect x="0" y="5" width="1" height="1" fill="#d1d5db"/>
+          <!-- jaw -->
+          <rect x="2" y="3" width="3" height="1" fill="#b8895a"/>
+          <!-- charcoal suit -->
+          <rect x="1" y="4" width="5" height="6" fill="#1f2937"/>
+          <rect x="3" y="4" width="1" height="6" fill="#111827"/>
+          <!-- lapels -->
+          <rect x="1" y="4" width="2" height="3" fill="#374151"/>
+          <rect x="4" y="4" width="2" height="3" fill="#374151"/>
+          <!-- star badge -->
+          <rect x="4" y="5" width="1" height="1" fill="#fbbf24"/>
+          <!-- black tie -->
+          <rect x="3" y="5" width="1" height="4" fill="#0a0a0a"/>
+          <!-- cross-body strap -->
+          <rect x="4" y="4" width="1" height="1" fill="#4b5563"/>
+          <rect x="3" y="5" width="1" height="1" fill="#4b5563"/>
+          <rect x="2" y="6" width="1" height="1" fill="#4b5563"/>
+          <rect x="1" y="7" width="1" height="1" fill="#4b5563"/>
+          <!-- arms -->
+          <rect x="0" y="4" width="1" height="4" fill="#1f2937"/>
+          <rect x="6" y="4" width="1" height="4" fill="#1f2937"/>
+          <!-- hands -->
+          <rect x="0" y="8" width="1" height="1" fill="#d4a574"/>
+          <rect x="6" y="8" width="1" height="1" fill="#d4a574"/>
+          <!-- legs -->
+          <rect x="1" y="10" width="2" height="4" fill="#111827"/>
+          <rect x="4" y="10" width="2" height="4" fill="#111827"/>
+          <!-- shoes -->
+          <rect x="0" y="14" width="3" height="1" fill="#0a0a0a"/>
+          <rect x="4" y="14" width="3" height="1" fill="#0a0a0a"/>
+        </svg>
+      </span>
+
+      <!-- CENTER DJ — Daft Punk helmet, hunched over massive multi-deck rig, laser beams, smoke -->
+      <span class="pixel-figure float-a glow-purple" style="margin: 0 4px; position:relative;">
+        <svg width="96" height="88" viewBox="0 0 24 22" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+
+          <!-- LASER BEAMS — shoot diagonally outward from deck -->
+          <!-- left laser beam -->
+          <rect x="0"  y="12" width="2" height="1" fill="#f87171" opacity="0.9"/>
+          <rect x="0"  y="13" width="1" height="1" fill="#fca5a5" opacity="0.6"/>
+          <!-- right laser beam -->
+          <rect x="22" y="12" width="2" height="1" fill="#f87171" opacity="0.9"/>
+          <rect x="23" y="13" width="1" height="1" fill="#fca5a5" opacity="0.6"/>
+          <!-- extra laser streaks -->
+          <rect x="0"  y="11" width="3" height="1" fill="#ef4444" opacity="0.5"/>
+          <rect x="21" y="11" width="3" height="1" fill="#ef4444" opacity="0.5"/>
+
+          <!-- SMOKE wisps at base -->
+          <rect x="3"  y="20" width="2" height="1" fill="#374151" opacity="0.5"/>
+          <rect x="2"  y="19" width="2" height="1" fill="#4b5563" opacity="0.4"/>
+          <rect x="7"  y="21" width="3" height="1" fill="#374151" opacity="0.4"/>
+          <rect x="14" y="21" width="3" height="1" fill="#374151" opacity="0.4"/>
+          <rect x="19" y="20" width="2" height="1" fill="#4b5563" opacity="0.4"/>
+          <rect x="20" y="19" width="2" height="1" fill="#374151" opacity="0.3"/>
+
+          <!-- HELMET — full visor, Daft Punk style, rounded top pixel corners -->
+          <!-- helmet dome -->
+          <rect x="8"  y="0" width="8"  height="1" fill="#2d2d50"/>
+          <rect x="7"  y="1" width="10" height="1" fill="#2d2d50"/>
+          <rect x="7"  y="1" width="10" height="5" fill="#1a1a2e"/>
+          <!-- visor strip — gold/amber tint, full width -->
+          <rect x="7"  y="2" width="10" height="3" fill="#b45309" opacity="0.85"/>
+          <rect x="8"  y="2" width="8"  height="3" fill="#d97706" opacity="0.7"/>
+          <!-- visor glare pixel -->
+          <rect x="9"  y="2" width="2"  height="1" fill="#fde68a" opacity="0.6"/>
+          <!-- helmet sides -->
+          <rect x="6"  y="1" width="1"  height="5" fill="#1e1e3f"/>
+          <rect x="17" y="1" width="1"  height="5" fill="#1e1e3f"/>
+          <!-- helmet chin guard -->
+          <rect x="7"  y="6" width="10" height="1" fill="#2d2d50"/>
+          <!-- earpiece lights — tiny accent pixels -->
+          <rect x="6"  y="3" width="1"  height="1" fill="#c084fc"/>
+          <rect x="17" y="3" width="1"  height="1" fill="#c084fc"/>
+
+          <!-- BODY — hunched forward (torso angled, arms reaching out) -->
+          <!-- torso — full black outfit -->
+          <rect x="8"  y="7" width="8"  height="5" fill="#0f172a"/>
+          <!-- chest detail / jacket zip -->
+          <rect x="11" y="7" width="2"  height="5" fill="#1e1e3f"/>
+          <!-- shoulder hunch — left arm extends far left to deck -->
+          <rect x="3"  y="8" width="5"  height="2" fill="#0f172a"/>
+          <!-- left elbow bend down -->
+          <rect x="3"  y="9" width="2"  height="2" fill="#0f172a"/>
+          <!-- left hand on deck -->
+          <rect x="3"  y="11" width="2" height="1" fill="#374151"/>
+          <!-- right arm extends far right -->
+          <rect x="16" y="8" width="5"  height="2" fill="#0f172a"/>
+          <rect x="19" y="9" width="2"  height="2" fill="#0f172a"/>
+          <rect x="19" y="11" width="2" height="1" fill="#374151"/>
+
+          <!-- MASSIVE DECK — multi-controller bank, wider than figure -->
+          <!-- deck surface -->
+          <rect x="0"  y="12" width="24" height="1" fill="#6d28d9"/>
+          <rect x="0"  y="13" width="24" height="7" fill="#0d0d1a"/>
+          <!-- deck top rail glow -->
+          <rect x="0"  y="12" width="24" height="1" fill="#c084fc" opacity="0.3"/>
+
+          <!-- Left turntable platter -->
+          <rect x="1"  y="14" width="6"  height="5" fill="#0f172a"/>
+          <rect x="2"  y="14" width="4"  height="5" fill="#1e1e3f"/>
+          <rect x="3"  y="15" width="2"  height="3" fill="#2d2d50"/>
+          <rect x="3"  y="16" width="2"  height="1" fill="#c084fc"/>
+          <!-- platter groove rings -->
+          <rect x="2"  y="14" width="4"  height="1" fill="#0f172a"/>
+          <rect x="2"  y="18" width="4"  height="1" fill="#0f172a"/>
+          <rect x="2"  y="15" width="1"  height="3" fill="#0f172a"/>
+          <rect x="5"  y="15" width="1"  height="3" fill="#0f172a"/>
+
+          <!-- Right turntable platter -->
+          <rect x="17" y="14" width="6"  height="5" fill="#0f172a"/>
+          <rect x="18" y="14" width="4"  height="5" fill="#1e1e3f"/>
+          <rect x="19" y="15" width="2"  height="3" fill="#2d2d50"/>
+          <rect x="19" y="16" width="2"  height="1" fill="#c084fc"/>
+          <rect x="18" y="14" width="4"  height="1" fill="#0f172a"/>
+          <rect x="18" y="18" width="4"  height="1" fill="#0f172a"/>
+          <rect x="18" y="15" width="1"  height="3" fill="#0f172a"/>
+          <rect x="21" y="15" width="1"  height="3" fill="#0f172a"/>
+
+          <!-- Center mixer bank -->
+          <rect x="8"  y="13" width="8"  height="6" fill="#12122a"/>
+          <!-- fader strips -->
+          <rect x="9"  y="14" width="1"  height="4" fill="#1e1e3f"/>
+          <rect x="11" y="14" width="1"  height="4" fill="#1e1e3f"/>
+          <rect x="13" y="14" width="1"  height="4" fill="#1e1e3f"/>
+          <!-- fader knobs -->
+          <rect x="9"  y="15" width="1"  height="1" fill="#f87171"/>
+          <rect x="11" y="16" width="1"  height="1" fill="#34d399"/>
+          <rect x="13" y="14" width="1"  height="1" fill="#fbbf24"/>
+          <!-- EQ knobs row -->
+          <rect x="9"  y="18" width="1"  height="1" fill="#c084fc"/>
+          <rect x="11" y="18" width="1"  height="1" fill="#c084fc"/>
+          <rect x="13" y="18" width="1"  height="1" fill="#c084fc"/>
+
+          <!-- Extra controller section left of center -->
+          <rect x="7"  y="13" width="1"  height="6" fill="#0d0d1a"/>
+          <rect x="7"  y="15" width="1"  height="1" fill="#fbbf24"/>
+          <rect x="7"  y="17" width="1"  height="1" fill="#34d399"/>
+
+          <!-- Extra controller section right of center -->
+          <rect x="16" y="13" width="1"  height="6" fill="#0d0d1a"/>
+          <rect x="16" y="14" width="1"  height="1" fill="#f87171"/>
+          <rect x="16" y="16" width="1"  height="1" fill="#c084fc"/>
+
+          <!-- legs — barely visible behind deck, just shoe tips peeking -->
+          <rect x="9"  y="20" width="2"  height="1" fill="#0a0a0a"/>
+          <rect x="13" y="20" width="2"  height="1" fill="#0a0a0a"/>
+
+        </svg>
+      </span>
+
+      <!-- RIGHT BODYGUARD 1 — mirrored, earpiece left, badge on right lapel -->
+      <span class="pixel-figure float-c glow-purple" style="margin-left:5px; margin-bottom:4px;">
+        <svg width="28" height="60" viewBox="0 0 7 15" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+          <!-- head -->
+          <rect x="1" y="0" width="5" height="4" fill="#e8c49a"/>
+          <!-- squared shades -->
+          <rect x="1" y="1" width="5" height="2" fill="#0a0a0a"/>
+          <rect x="1" y="1" width="2" height="2" fill="#0f0f0f"/>
+          <rect x="4" y="1" width="2" height="2" fill="#0f0f0f"/>
+          <rect x="3" y="1" width="1" height="2" fill="#1a1a1a"/>
+          <!-- earpiece left -->
+          <rect x="0" y="2" width="1" height="1" fill="#d1d5db"/>
+          <rect x="0" y="3" width="1" height="2" fill="#9ca3af"/>
+          <rect x="0" y="5" width="1" height="1" fill="#d1d5db"/>
+          <!-- jaw line -->
+          <rect x="2" y="3" width="3" height="1" fill="#c4956a"/>
+          <!-- charcoal suit -->
+          <rect x="1" y="4" width="5" height="6" fill="#1f2937"/>
+          <rect x="3" y="4" width="1" height="6" fill="#111827"/>
+          <!-- lapels -->
+          <rect x="1" y="4" width="2" height="3" fill="#374151"/>
+          <rect x="4" y="4" width="2" height="3" fill="#374151"/>
+          <!-- badge on right lapel -->
+          <rect x="2" y="5" width="1" height="1" fill="#fbbf24"/>
+          <!-- black tie -->
+          <rect x="3" y="5" width="1" height="4" fill="#0a0a0a"/>
+          <!-- cross-body strap, opposite direction -->
+          <rect x="2" y="4" width="1" height="1" fill="#4b5563"/>
+          <rect x="3" y="5" width="1" height="1" fill="#4b5563"/>
+          <rect x="4" y="6" width="1" height="1" fill="#4b5563"/>
+          <rect x="5" y="7" width="1" height="1" fill="#4b5563"/>
+          <!-- arms -->
+          <rect x="0" y="4" width="1" height="4" fill="#1f2937"/>
+          <rect x="6" y="4" width="1" height="4" fill="#1f2937"/>
+          <!-- hands -->
+          <rect x="0" y="8" width="1" height="1" fill="#e8c49a"/>
+          <rect x="6" y="8" width="1" height="1" fill="#e8c49a"/>
+          <!-- legs -->
+          <rect x="1" y="10" width="2" height="4" fill="#111827"/>
+          <rect x="4" y="10" width="2" height="4" fill="#111827"/>
+          <!-- shoes -->
+          <rect x="0" y="14" width="3" height="1" fill="#0a0a0a"/>
+          <rect x="4" y="14" width="3" height="1" fill="#0a0a0a"/>
+        </svg>
+      </span>
+
+      <!-- RIGHT BODYGUARD 2 — earpiece right, badge on left lapel -->
+      <span class="pixel-figure float-e glow-amber" style="margin-left:3px; margin-bottom:10px;">
+        <svg width="32" height="64" viewBox="0 0 8 16" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+          <!-- head -->
+          <rect x="2" y="0" width="4" height="4" fill="#b8895a"/>
+          <!-- squared shades -->
+          <rect x="2" y="1" width="4" height="2" fill="#0a0a0a"/>
+          <rect x="2" y="1" width="2" height="2" fill="#111111"/>
+          <rect x="4" y="1" width="2" height="2" fill="#111111"/>
+          <rect x="2" y="1" width="4" height="1" fill="#1a1a1a"/>
+          <!-- earpiece wire right -->
+          <rect x="6" y="2" width="1" height="1" fill="#d1d5db"/>
+          <rect x="6" y="3" width="1" height="2" fill="#9ca3af"/>
+          <rect x="6" y="5" width="1" height="1" fill="#d1d5db"/>
+          <!-- jaw -->
+          <rect x="3" y="3" width="2" height="1" fill="#9a7040"/>
+          <!-- suit -->
+          <rect x="1" y="4" width="6" height="6" fill="#1f2937"/>
+          <rect x="3" y="4" width="2" height="6" fill="#111827"/>
+          <!-- lapels -->
+          <rect x="1" y="4" width="2" height="3" fill="#374151"/>
+          <rect x="5" y="4" width="2" height="3" fill="#374151"/>
+          <!-- badge on left lapel -->
+          <rect x="5" y="5" width="1" height="1" fill="#fbbf24"/>
+          <!-- tie -->
+          <rect x="3" y="5" width="2" height="4" fill="#0a0a0a"/>
+          <!-- cross-body strap -->
+          <rect x="5" y="4" width="1" height="1" fill="#6b7280"/>
+          <rect x="4" y="5" width="1" height="1" fill="#6b7280"/>
+          <rect x="3" y="6" width="1" height="1" fill="#6b7280"/>
+          <rect x="2" y="7" width="1" height="1" fill="#6b7280"/>
+          <!-- arms -->
+          <rect x="0" y="4" width="1" height="5" fill="#1f2937"/>
+          <rect x="7" y="4" width="1" height="5" fill="#1f2937"/>
+          <!-- hands -->
+          <rect x="0" y="9" width="1" height="1" fill="#b8895a"/>
+          <rect x="7" y="9" width="1" height="1" fill="#b8895a"/>
+          <!-- legs -->
+          <rect x="1" y="10" width="2" height="4" fill="#111827"/>
+          <rect x="5" y="10" width="2" height="4" fill="#111827"/>
+          <!-- shoes -->
+          <rect x="0" y="14" width="3" height="2" fill="#0a0a0a"/>
+          <rect x="5" y="14" width="3" height="2" fill="#0a0a0a"/>
+        </svg>
+      </span>
+
     </div>
 
-    <!-- Confirmation screen -->
-    <div id="confirmScreen">
-      <div class="confirm-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <h2>Request sent</h2>
-      <p>The DJ has your pick. We'll see what we can do.</p>
-      <div class="confirm-track" id="confirmTrackInfo"></div>
-      <button class="another-btn" onclick="resetForm()">Request another song</button>
+    <div class="top-bar">
+      <div class="filtah-title"><span class="dj-part">DJ</span> FILTAH</div>
+      <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" title="Settings">&#9776;</button>
+    </div>
+    <p class="filtah-subtitle-line">load &bull; scan &bull; drop the banger</p>
+  </div>
+
+  <!-- SETTINGS (collapsible via hamburger) -->
+  <div class="card" id="api-keys-card" style="display:none;">
+    <div class="section-title">Settings</div>
+
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <button onclick="clearScanMemory()">Clear Scan Memory</button>
+    </div>
+    <div class="hint" id="storage-hint">Content scanning runs server-side via Claude — no API key needed here.</div>
+
+    <div class="divider" style="margin:16px 0 12px;"></div>
+
+    <!-- Google Sheet loader (hidden here in settings) -->
+    <div class="section-title" style="margin-bottom:8px;">Load from Google Sheet</div>
+    <!-- sheet-url hidden — loaded from server config -->
+    <input type="hidden" id="sheet-url" />
+    <div class="row">
+      <input type="text" id="sheet-col-song" value="Song Title" placeholder="Song column" />
+      <input type="text" id="sheet-col-artist" value="Artist" placeholder="Artist column" />
+      <button onclick="loadSheet()">&#8635; Fetch + Check</button>
+    </div>
+    <div class="autofetch-row">
+      <div class="autofetch-dot" id="autofetch-dot"></div>
+      <span class="toggle-label autofetch-label" id="autofetch-label">Auto-fetch: use the disk on the left</span>
+    </div>
+    <div id="sheet-status"></div>
+
+    <div class="divider" style="margin:16px 0 12px;"></div>
+
+    <!-- Paste from sheet -->
+    <div class="section-title" style="margin-bottom:8px;">Paste from Sheet</div>
+    <textarea class="mono" id="paste-box" placeholder="Song Title	Artist&#10;Levitating	Dua Lipa&#10;WAP	Cardi B"></textarea>
+    <div class="hint">Select all in Google Sheets (Ctrl+A / Cmd+A), copy, paste here. Include the header row.</div>
+    <div class="row" style="margin-top:8px;">
+      <input type="text" id="paste-col-song" value="Song Title" placeholder="Song column" />
+      <input type="text" id="paste-col-artist" value="Artist" placeholder="Artist column" />
+      <button onclick="loadPaste()">Load + Check</button>
     </div>
   </div>
 
-  <!-- Fixed submit panel -->
-  <div id="submitPanel">
-    <p class="submit-selected" id="submitLabel">Song selected</p>
-    <button class="submit-btn" id="submitBtn" onclick="doSubmit()">Send request</button>
+  <!-- FILTER MODE — slider -->
+  <div class="card">
+    <div class="section-title">Content Filter</div>
+    <div class="filter-slider-wrap" id="filter-slider-wrap">
+      <div class="filter-slider-track">
+        <div class="filter-option" data-mode="cleanest" onclick="setFilterMode('cleanest')">
+          &#127807; Cleanest
+        </div>
+        <div class="filter-option" data-mode="somegrime" onclick="setFilterMode('somegrime')">
+          &#128293; Some Grime
+        </div>
+        <div class="filter-option" data-mode="nofilter" onclick="setFilterMode('nofilter')">
+          &#128165; No Filter
+        </div>
+      </div>
+      <div class="filter-pill" id="filter-pill"></div>
+    </div>
+    <div class="mode-desc" id="mode-desc"></div>
+    <div class="toggle-row" style="margin-top:10px;">
+      <label class="toggle">
+        <input type="checkbox" id="persist-mode-toggle" onchange="savePersistToggle()" />
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="toggle-label">Remember this mode when I reopen the file</span>
+    </div>
   </div>
 
-  <script>
-    // ── State ──
-    let selectedTrack = null;
-    let isSearching   = false;
-    let isSubmitting  = false;
+  <!-- VIBE CHECK -->
+  <div class="card">
+    <div class="section-title">Vibe Check</div>
+    <div class="two-col">
+      <div>
+        <label>Event Type</label>
+        <select id="event-type" onchange="onEventTypeChange()">
+          <option value="school-dance">&#127881; School Dance</option>
+          <option value="homecoming">&#128081; Homecoming</option>
+          <option value="prom">&#10024; Prom</option>
+          <option value="house-party">&#127968; House Party</option>
+          <option value="staff-party">&#127870; Staff / Adult Party</option>
+          <option value="block-party">&#127992; Block Party / Outdoor</option>
+          <option value="slow-night">&#127769; Slow Night / Chill</option>
+          <option value="mixed">&#127926; Mixed / General</option>
+          <option value="custom">&#9998; Custom…</option>
+        </select>
+        <input type="text" id="event-type-custom" placeholder="Describe your event (e.g. 8th grade graduation)" oninput="saveVibeSettings()" style="display:none; margin-top:6px;" />
+      </div>
+      <div>
+        <label>Playlist Reference URL <span style="color:#bbb;font-weight:400;">(optional)</span></label>
+        <div style="display:flex; gap:6px; align-items:stretch;">
+          <input type="text" id="playlist-url" placeholder="Spotify or YouTube playlist link" oninput="saveVibeSettings()" style="flex:1;" />
+          <button onclick="loadPlaylistRef()" style="white-space:nowrap; padding:0 12px; font-size:12px;" title="Fetch playlist tracks for vibe reference">Load &#9654;</button>
+        </div>
+      </div>
+    </div>
+    <label>Vibe Prompt <span style="color:#bbb;font-weight:400;">(optional — describe your crowd or vibe)</span></label>
+    <div style="display:flex; gap:6px; align-items:flex-start;">
+      <textarea id="vibe-prompt" placeholder="e.g. 10th graders, mostly hip-hop fans, high energy, last song should be a banger" oninput="saveVibeSettings()" style="flex:1; margin-bottom:0;"></textarea>
+      <button onclick="saveVibeSettings(); showVibeSaved()" style="white-space:nowrap; padding:8px 12px; font-size:12px; align-self:flex-start;" title="Save vibe settings">Save &#10003;</button>
+    </div>
+    <div class="hint" id="playlist-hint">No playlist loaded. Using built-in genre defaults for vibe check.</div>
+  </div>
 
-    // ── DOM refs ──
-    const searchInput  = document.getElementById('searchInput');
-    const searchBtn    = document.getElementById('searchBtn');
-    const statusMsg    = document.getElementById('statusMsg');
-    const resultsEl    = document.getElementById('results');
-    const submitPanel  = document.getElementById('submitPanel');
-    const submitLabel  = document.getElementById('submitLabel');
-    const submitBtn    = document.getElementById('submitBtn');
-    const confirmScreen = document.getElementById('confirmScreen');
-    const confirmTrack  = document.getElementById('confirmTrackInfo');
-    const searchUI     = document.getElementById('searchUI');
+  <!-- LOAD REQUESTS -->
+  <div class="card">
+    <div class="section-title">Song Requests for DJ Filtah</div>
+    <div class="row">
+      <input type="text" id="song-input" placeholder="Song title" />
+      <input type="text" id="artist-input" placeholder="Artist (Enter to add)" />
+      <button onclick="addManual()">Add + Check</button>
+    </div>
+    <div id="checking-bar"><div class="spinner"></div> <span id="checking-text">Checking…</span></div>
+    <div id="error-box"></div>
 
-    // ── Search on Enter ──
-    searchInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') doSearch();
+    <!-- Bulk import -->
+    <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+      <button class="bulk-toggle-btn" onclick="toggleBulkImport()">&#8615; Bulk import</button>
+      <span style="font-size:11px;color:var(--muted);opacity:0.6;">paste multiple songs at once</span>
+    </div>
+    <div class="bulk-import-area" id="bulk-import-area">
+      <textarea class="mono" id="bulk-input" rows="5" placeholder="Paste one song per line:&#10;Mr. Brightside - The Killers&#10;Levitating - Dua Lipa&#10;&#10;Also works with a tab between song and artist."></textarea>
+      <div class="bulk-hint">Format: <strong>Song - Artist</strong> or <strong>Song [tab] Artist</strong> — one per line. Artist is optional.</div>
+      <div class="row" style="margin-top:8px;">
+        <button onclick="runBulkImport()" class="primary">&#9654;&nbsp; Check all</button>
+        <button onclick="document.getElementById('bulk-input').value=''">Clear</button>
+      </div>
+      <div id="bulk-progress" style="font-size:12px;color:var(--muted);margin-top:6px;display:none;"></div>
+    </div>
+
+  </div>
+
+  <!-- APPROVED POOL -->
+  <div class="card">
+    <div class="flex-between">
+      <div class="section-title" style="margin-bottom:0;">Approved pool</div>
+      <div class="stat"><strong id="pool-count">0</strong> songs ready</div>
+    </div>
+    <div class="pool-controls">
+      <label>Sort:</label>
+      <select id="pool-sort" onchange="renderPool()">
+        <option value="added">Time added ↓</option>
+        <option value="energy-high">Energy: High first</option>
+        <option value="energy-low">Energy: Slow first</option>
+        <option value="name">Name A–Z</option>
+      </select>
+      <label style="margin-left:6px;">Show:</label>
+      <select id="pool-filter" onchange="renderPool()">
+        <option value="all">All</option>
+        <option value="unplayed">Unplayed only</option>
+        <option value="played">Played only</option>
+        <option value="high">⚡ High energy</option>
+        <option value="mid">🎵 Mid energy</option>
+        <option value="slow">💎 Slow</option>
+      </select>
+    </div>
+    <div id="song-list"><span style="font-size:13px;color:#bbb;">No approved songs yet.</span></div>
+  </div>
+
+  <!-- FLAGGED -->
+  <div class="card warn">
+    <div class="flex-between">
+      <div class="section-title warn" style="margin-bottom:0;">&#9888; Flagged — your call</div>
+      <div class="stat"><strong id="flagged-count">0</strong> flagged</div>
+    </div>
+    <div id="flagged-list"><span style="font-size:13px;color:#bbb;">Nothing flagged.</span></div>
+  </div>
+
+  <!-- DENIED -->
+  <div class="card denied-card">
+    <div class="flex-between">
+      <div class="section-title denied" style="margin-bottom:0;">&#128683; Denied</div>
+      <div class="stat"><strong id="denied-count">0</strong> denied</div>
+    </div>
+    <div class="hint" style="margin-bottom:8px;">Songs you've explicitly rejected. Re-submissions are tracked — the count badge shows how many times the same song has been denied.</div>
+    <div id="denied-list"><span style="font-size:13px;color:#bbb;">Nothing denied yet.</span></div>
+  </div>
+
+  <!-- PICK -->
+  <div class="card pick-card">
+    <div class="section-title">Pick next song</div>
+
+    <div class="vibe-selector" id="vibe-pick-selector">
+      <button class="vibe-btn active" data-vibe="any" onclick="setPickVibe('any')">&#127926; Any</button>
+      <button class="vibe-btn" data-vibe="high" onclick="setPickVibe('high')">&#9889; High Energy</button>
+      <button class="vibe-btn" data-vibe="mid" onclick="setPickVibe('mid')">&#127925; Mid Energy</button>
+      <button class="vibe-btn" data-vibe="slow" onclick="setPickVibe('slow')">&#128142; Slow Dance</button>
+    </div>
+
+    <div class="pick-display" id="pick-display">
+      <span class="pick-empty">Load requests above, then pick.</span>
+    </div>
+    <div class="pick-stats" id="pick-stats"></div>
+    <div class="row" style="margin-top:14px;">
+      <button class="primary" id="pick-btn" onclick="pickSong()" style="flex:1; padding:12px;" disabled>&#9654;&nbsp; Pick a song</button>
+      <button id="undo-btn" onclick="undoPick()" disabled style="padding:12px 16px;">&#8630; Undo</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card">
+    <div class="section-title">Already played</div>
+    <div id="history-list"><span style="font-size:13px;color:#bbb;">Nothing played yet.</span></div>
+  </div>
+
+</div>
+
+<script>
+let pool = [], flagged = [], history = [], denied = [], lastPicked = null;
+let scanCache = {};
+let filterMode = 'somegrime';
+let pickVibe = 'any';
+let playlistTracks = [];
+let menuOpen = false;
+let urlRowOpen = true;
+let autoFetchTimer = null;
+let autoFetchRunning = false;
+
+const STORAGE_PREFIX = 'djRequestPicker.v8.';
+const LEGACY_STORAGE_PREFIX = 'djRequestPicker.v7.';
+const STORAGE_KEYS = {
+  sheetUrl: STORAGE_PREFIX + 'sheetUrl',
+  pool: STORAGE_PREFIX + 'pool',
+  flagged: STORAGE_PREFIX + 'flagged',
+  history: STORAGE_PREFIX + 'history',
+  denied: STORAGE_PREFIX + 'denied',
+  scanCache: STORAGE_PREFIX + 'scanCache',
+  filterMode: STORAGE_PREFIX + 'filterMode',
+  persistMode: STORAGE_PREFIX + 'persistMode',
+  eventType: STORAGE_PREFIX + 'eventType',
+  eventTypeCustom: STORAGE_PREFIX + 'eventTypeCustom',
+  vibePrompt: STORAGE_PREFIX + 'vibePrompt',
+  playlistUrl: STORAGE_PREFIX + 'playlistUrl',
+  urlRowOpen: STORAGE_PREFIX + 'urlRowOpen',
+  menuOpen: STORAGE_PREFIX + 'menuOpen'
+};
+
+const MODE_CONFIG = {
+  cleanest: {
+    label: '🌿 Cleanest',
+    desc: 'Elementary school / family events. Flags any profanity (even mild), suggestive themes, drug or alcohol references, or adult topics. Only universally clean songs pass.',
+    systemPrompt: `You are an extremely conservative content reviewer for a family or elementary school event (ages 5-12).
+Flag anything with: any profanity (including "damn", "hell", "crap"), suggestive or romantic themes beyond hand-holding, drug or alcohol references of any kind, adult topics, scary or violent themes.
+APPROVE only squeaky-clean pop, kids' music, and universally safe radio hits a parent would play at a church event.`
+  },
+  somegrime: {
+    label: '🔥 Some Grime',
+    desc: 'Middle school / conservative high school. Flags explicit sexual content, strong profanity, slurs, graphic violence. Mild romance, "damn"/"hell", and clean party energy are fine. Known explicit songs get flagged unless marked clean.',
+    systemPrompt: `You are a conservative content reviewer for a middle school or conservative high school dance (ages 11-17).
+Flag: explicit sexual content, repeated strong profanity (F-word etc.), uncensored slurs, graphic violence, drug/alcohol glorification.
+APPROVE: mild romance, dancing themes, clean party energy, occasional mild words like "damn"/"hell".
+FLAG if the original version is widely known to be explicit and the title doesn't specify clean/radio edit.`
+  },
+  nofilter: {
+    label: '💥 No Filter',
+    desc: 'Adult / staff party. Everything is approved automatically. Claude still scans and provides reputation notes and energy tags — you get the info, but nothing is held back.',
+    systemPrompt: `You are reviewing songs for an adult party with no content restrictions. Always set "appropriate": true.
+Still provide an honest reputation overview, note any possible discrepancies (clean vs explicit versions, etc.), and assess energy level accurately.`
+  }
+};
+
+const EVENT_VIBE_PROMPTS = {
+  'school-dance': 'This is a school dance. Prioritize danceable, crowd-friendly pop, hip-hop, and R&B. Flag songs that are too slow, too niche, or unlikely to get students on the floor.',
+  'homecoming': 'This is a homecoming dance. Mix of upbeat bangers and a few slow songs acceptable. Pop, hip-hop, R&B, and Latin all work well.',
+  'prom': 'This is prom. A mix of high-energy hits and slow/romantic songs. More formal than a typical school dance.',
+  'house-party': 'This is a house party. High-energy is preferred. Hip-hop, EDM, pop, and Latin. Slow songs are generally low viability unless explicitly romantic.',
+  'staff-party': 'This is an adult staff or work party. Broad musical tastes — pop, classic hits, hip-hop, country, rock all viable. Aim for crowd-pleasers.',
+  'block-party': 'This is an outdoor block party or community event. Upbeat, crowd-friendly, and broad appeal. Avoid niche or slow tracks.',
+  'slow-night': 'This is a chill or slow night. Slow jams, R&B, and soft pop are high viability. High-energy tracks are low viability.',
+  'mixed': 'This is a general mixed event. Balance of energy levels. Tag accurately so the DJ can choose.'
+};
+
+const DEFAULT_GENRE_VIBE = `High viability (danceable): mainstream pop, hip-hop, R&B, EDM/dance, Latin pop, funk, Afrobeats, dancehall.
+Mid viability: indie pop, soft rock, country pop, classic rock anthems, soul.
+Low viability: country ballads, metal, classical, slow acoustic singer-songwriter, ambient.
+Slow dance viability: romantic R&B, slow ballads, soft pop love songs.`;
+
+// ── STORAGE ──
+function storageGet(key, fallback = '') {
+  try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+}
+function legacyStorageGet(name, fallback = '') {
+  try {
+    return localStorage.getItem(STORAGE_PREFIX + name)
+      || localStorage.getItem(LEGACY_STORAGE_PREFIX + name)
+      || fallback;
+  } catch (e) { return fallback; }
+}
+function storageSet(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+function storageRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
+function loadJson(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function saveJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+
+// ── NORMALIZE ──
+function normalizeSongKey(song, artist) {
+  const s = cleanCell(song).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const a = cleanCell(artist || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return `${s}||${a}`;
+}
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+function formatDiscrepancies(list) {
+  if (!Array.isArray(list) || !list.length) return 'No major discrepancies noted.';
+  return list.filter(Boolean).join(' • ');
+}
+function formatTs(ts) {
+  if (!ts) return '';
+  const diffSec = Math.floor((Date.now() - ts) / 1000);
+  if (diffSec < 60) return 'just now';
+  if (diffSec < 600) return `${Math.floor(diffSec / 60)}m ago`;
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+// ── HAMBURGER MENU ──
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  document.getElementById('api-keys-card').style.display = menuOpen ? 'block' : 'none';
+  document.getElementById('menu-btn').style.background = menuOpen ? '#1a1a1a' : '';
+  document.getElementById('menu-btn').style.color = menuOpen ? '#fff' : '';
+  document.getElementById('menu-btn').style.borderColor = menuOpen ? '#1a1a1a' : '';
+  storageSet(STORAGE_KEYS.menuOpen, menuOpen ? '1' : '0');
+}
+
+// ── URL ROW COLLAPSIBLE (removed — URL is hidden server-side) ──
+function toggleUrlRow() { /* no-op */ }
+
+// ── FILTER MODE SLIDER ──
+function setFilterMode(mode) {
+  filterMode = mode;
+  const opts = document.querySelectorAll('.filter-option');
+  const pill = document.getElementById('filter-pill');
+  const wrap = document.getElementById('filter-slider-wrap');
+  let activeIdx = 0;
+  opts.forEach((opt, i) => {
+    const isActive = opt.dataset.mode === mode;
+    opt.classList.toggle('active', isActive);
+    if (isActive) activeIdx = i;
+  });
+  const pct = activeIdx / 3;
+  const w = wrap.offsetWidth;
+  const slotW = w / 3;
+  pill.style.left = (activeIdx * slotW + 3) + 'px';
+  pill.style.width = (slotW - 6) + 'px';
+  pill.className = 'filter-pill ' + mode;
+  document.getElementById('mode-desc').innerHTML = MODE_CONFIG[mode].desc;
+  const persistOn = document.getElementById('persist-mode-toggle').checked;
+  if (persistOn) storageSet(STORAGE_KEYS.filterMode, mode);
+}
+
+function savePersistToggle() {
+  const on = document.getElementById('persist-mode-toggle').checked;
+  storageSet(STORAGE_KEYS.persistMode, on ? '1' : '0');
+  if (on) storageSet(STORAGE_KEYS.filterMode, filterMode);
+  else storageRemove(STORAGE_KEYS.filterMode);
+}
+
+// ── VIBE SETTINGS ──
+function onEventTypeChange() {
+  const sel = document.getElementById('event-type').value;
+  const customInput = document.getElementById('event-type-custom');
+  customInput.style.display = sel === 'custom' ? 'block' : 'none';
+  saveVibeSettings();
+}
+
+function saveVibeSettings() {
+  storageSet(STORAGE_KEYS.eventType, document.getElementById('event-type').value);
+  storageSet(STORAGE_KEYS.eventTypeCustom, document.getElementById('event-type-custom').value);
+  storageSet(STORAGE_KEYS.vibePrompt, document.getElementById('vibe-prompt').value);
+  storageSet(STORAGE_KEYS.playlistUrl, document.getElementById('playlist-url').value);
+}
+
+function showVibeSaved() {
+  const hint = document.getElementById('playlist-hint');
+  const prev = hint.textContent;
+  hint.textContent = '✓ Vibe settings saved.';
+  hint.style.color = 'var(--success)';
+  setTimeout(() => { hint.textContent = prev; hint.style.color = ''; }, 2000);
+}
+
+async function loadPlaylistRef() {
+  const url = document.getElementById('playlist-url').value.trim();
+  const hint = document.getElementById('playlist-hint');
+  const btn  = document.querySelector('button[onclick="loadPlaylistRef()"]');
+  if (!url) {
+    hint.textContent = 'Paste a Spotify or YouTube playlist URL first.';
+    hint.style.color = 'var(--warn)';
+    setTimeout(() => { hint.style.color = ''; }, 3000);
+    return;
+  }
+  // Must be a Spotify playlist URL
+  if (!url.includes('spotify') || !url.includes('playlist')) {
+    hint.textContent = 'Only Spotify playlist links are supported right now.';
+    hint.style.color = 'var(--warn)';
+    setTimeout(() => { hint.style.color = ''; }, 3000);
+    return;
+  }
+  // Show loading state
+  hint.textContent = 'Loading playlist…';
+  hint.style.color = 'var(--muted)';
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  saveVibeSettings();
+  try {
+    const encoded = encodeURIComponent(url);
+    const res = await fetch(`/.netlify/functions/get-playlist?url=${encoded}`);
+    const data = await res.json();
+    if (!res.ok) {
+      hint.textContent = data.error || 'Could not load playlist.';
+      hint.style.color = 'var(--danger)';
+      setTimeout(() => { hint.style.color = ''; }, 4000);
+      return;
+    }
+    // Populate playlistTracks with "Song - Artist" strings
+    playlistTracks = (data.tracks || []).map(t => `${t.name} - ${t.artist}`);
+    const name = data.playlistName || 'Playlist';
+    hint.textContent = `✓ Loaded "${name}" — ${playlistTracks.length} tracks. Suggestions will match this vibe.`;
+    hint.style.color = 'var(--success)';
+    setTimeout(() => { hint.style.color = ''; }, 5000);
+  } catch (e) {
+    hint.textContent = 'Network error — could not fetch playlist.';
+    hint.style.color = 'var(--danger)';
+    setTimeout(() => { hint.style.color = ''; }, 4000);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Load ▶'; }
+  }
+}
+
+// ── PICK VIBE ──
+function setPickVibe(vibe) {
+  pickVibe = vibe;
+  document.querySelectorAll('.vibe-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.vibe === vibe);
+  });
+  updatePickStats();
+}
+
+function poolForVibe() {
+  const map = { high: 'high', mid: 'mid', slow: 'slow' };
+  let candidates = pickVibe === 'any' ? pool : pool.filter(r => r.energy === map[pickVibe]);
+  // Prefer unplayed; fall back to all if everything's already been marked played
+  const unplayed = candidates.filter(r => !r.played);
+  return unplayed.length ? unplayed : candidates;
+}
+
+function updatePickStats() {
+  const el = document.getElementById('pick-stats');
+  const high = pool.filter(r => r.energy === 'high').length;
+  const mid = pool.filter(r => r.energy === 'mid').length;
+  const slow = pool.filter(r => r.energy === 'slow').length;
+  const unknown = pool.filter(r => !r.energy || r.energy === 'unknown').length;
+  if (!pool.length) { el.textContent = ''; return; }
+  const parts = [];
+  if (high) parts.push(`⚡ ${high} high`);
+  if (mid) parts.push(`🎵 ${mid} mid`);
+  if (slow) parts.push(`💎 ${slow} slow`);
+  if (unknown) parts.push(`? ${unknown} untagged`);
+  el.textContent = parts.join(' · ');
+  const available = poolForVibe().length;
+  document.getElementById('pick-btn').disabled = available === 0;
+}
+
+// ── STATE ──
+function saveAppState() {
+  saveJson(STORAGE_KEYS.pool, pool);
+  saveJson(STORAGE_KEYS.flagged, flagged);
+  saveJson(STORAGE_KEYS.history, history);
+  saveJson(STORAGE_KEYS.denied, denied);
+  saveJson(STORAGE_KEYS.scanCache, scanCache);
+  const sheetUrl = document.getElementById('sheet-url');
+  if (sheetUrl) storageSet(STORAGE_KEYS.sheetUrl, sheetUrl.value.trim());
+}
+
+function loadSavedState() {
+  pool = loadJson(STORAGE_KEYS.pool, []);
+  flagged = loadJson(STORAGE_KEYS.flagged, []);
+  history = loadJson(STORAGE_KEYS.history, []);
+  denied = loadJson(STORAGE_KEYS.denied, []);
+  scanCache = loadJson(STORAGE_KEYS.scanCache, {});
+
+  const sheetUrl = document.getElementById('sheet-url');
+  const savedSheetUrl = legacyStorageGet('sheetUrl', '');
+  // Always load sheet URL from server config — never shown in UI
+  fetch('/.netlify/functions/get-config')
+    .then(r => r.json())
+    .then(cfg => { if (cfg.appsScriptUrl) sheetUrl.value = cfg.appsScriptUrl; })
+    .catch(() => {
+      // Fallback to localStorage if running locally / server unreachable
+      if (savedSheetUrl) sheetUrl.value = savedSheetUrl;
     });
 
-    // ── Search ──
-    async function doSearch() {
-      const q = searchInput.value.trim();
-      if (!q || isSearching) return;
+  // Persist mode
+  const persistOn = storageGet(STORAGE_KEYS.persistMode, '0') === '1';
+  document.getElementById('persist-mode-toggle').checked = persistOn;
+  const savedMode = persistOn ? storageGet(STORAGE_KEYS.filterMode, 'somegrime') : 'somegrime';
 
-      isSearching = true;
-      selectedTrack = null;
-      updateSubmitPanel();
-      setStatus('');
-      resultsEl.innerHTML = '';
-      searchBtn.disabled = true;
-      searchBtn.innerHTML = '<span class="spinner"></span>Searching…';
+  // Menu state
+  const wasMenuOpen = storageGet(STORAGE_KEYS.menuOpen, '0') === '1';
+  if (wasMenuOpen) toggleMenu();
 
-      try {
-        const res = await fetch(`/.netlify/functions/spotify-search?q=${encodeURIComponent(q)}`);
-        const data = await res.json();
+  // Vibe settings
+  const savedEventType = storageGet(STORAGE_KEYS.eventType, 'school-dance');
+  document.getElementById('event-type').value = savedEventType;
+  const savedCustomType = storageGet(STORAGE_KEYS.eventTypeCustom, '');
+  if (savedCustomType) document.getElementById('event-type-custom').value = savedCustomType;
+  if (savedEventType === 'custom') document.getElementById('event-type-custom').style.display = 'block';
+  document.getElementById('vibe-prompt').value = storageGet(STORAGE_KEYS.vibePrompt, '');
+  document.getElementById('playlist-url').value = storageGet(STORAGE_KEYS.playlistUrl, '');
 
-        if (!res.ok) throw new Error(data.error || 'Search failed');
-        if (!data.tracks || data.tracks.length === 0) {
-          setStatus('No results. Try a different title or artist name.');
-          return;
-        }
+  renderPool(); renderFlagged(); renderDenied(); renderHistory();
+  updateStorageHint(); updatePickStats();
 
-        renderResults(data.tracks);
-      } catch (err) {
-        setStatus(err.message || 'Something went wrong. Try again.', 'error');
-      } finally {
-        isSearching = false;
-        searchBtn.disabled = false;
-        searchBtn.textContent = 'Search Spotify';
-      }
+  // Set filter mode after DOM is ready so pill can measure width
+  setTimeout(() => setFilterMode(savedMode), 50);
+}
+
+function updateStorageHint() {
+  const el = document.getElementById('storage-hint');
+  const cacheCount = Object.keys(scanCache || {}).length;
+  el.textContent = `${cacheCount} song${cacheCount !== 1 ? 's' : ''} in scan cache. Content scanning runs server-side via Claude — no API key needed here.`;
+}
+
+// ── KEY MANAGEMENT ──
+function isMaskedKey(value) { return /^•+$/.test(value.trim()); }
+
+function cleanHeaderValue(value, label) {
+  const raw = String(value || '').trim();
+  for (const ch of raw) {
+    const code = ch.charCodeAt(0);
+    if (code > 255 || code === 10 || code === 13) {
+      throw new Error(`${label} contains an invalid character. Re-paste it as plain text.`);
     }
+  }
+  return raw;
+}
 
-    // ── Render results ──
-    function renderResults(tracks) {
-      resultsEl.innerHTML = '';
-      tracks.forEach(track => {
-        const card = document.createElement('div');
-        card.className = 'track-card';
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', `Select ${track.name} by ${track.artists}`);
+function clearScanMemory() {
+  pool = []; flagged = []; history = []; denied = []; lastPicked = null; scanCache = {};
+  storageRemove(STORAGE_KEYS.pool); storageRemove(STORAGE_KEYS.flagged);
+  storageRemove(STORAGE_KEYS.history); storageRemove(STORAGE_KEYS.denied);
+  storageRemove(STORAGE_KEYS.scanCache);
+  document.getElementById('pick-display').innerHTML = '<span class="pick-empty">Scan memory cleared.</span>';
+  document.getElementById('undo-btn').disabled = true;
+  renderPool(); renderFlagged(); renderDenied(); renderHistory(); updateStorageHint(); updatePickStats();
+}
 
-        const artHtml = track.albumArt
-          ? `<img class="track-art" src="${escHtml(track.albumArt)}" alt="" loading="lazy" />`
-          : `<div class="track-art-placeholder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="2"/><path d="M9 9v9m6-11v11"/><rect x="2" y="2" width="20" height="20" rx="3"/></svg></div>`;
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['sheet','paste','manual'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
 
-        card.innerHTML = `
-          ${artHtml}
-          <div class="track-info">
-            <div class="track-title">${escHtml(track.name)}</div>
-            <div class="track-artist">${escHtml(track.artists)}</div>
-            <div class="track-meta">${escHtml(track.album)} · ${formatDuration(track.duration_ms)}</div>
-          </div>
-          <div class="track-check">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity:0">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-        `;
+// ── ERROR DISPLAY ──
+function showError(msg) { const el = document.getElementById('error-box'); el.style.display = 'block'; el.textContent = msg; }
+function clearError() { const el = document.getElementById('error-box'); el.style.display = 'none'; el.textContent = ''; }
+function setSheetStatus(msg, type) {
+  const el = document.getElementById('sheet-status');
+  el.textContent = msg;
+  el.className = type === 'ok' ? 'status-ok' : type === 'err' ? 'status-err' : 'hint';
+}
 
-        card.addEventListener('click', () => selectTrack(card, track));
-        card.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectTrack(card, track); }
-        });
+// ── GOOGLE SHEET FETCH ──
+function normalizeGoogleSheetCsvUrl(rawUrl) {
+  let url = rawUrl.trim();
+  url = url.replace('/pubhtml', '/pub');
+  if (url.includes('/pub')) {
+    url = url.replace(/output=[^&]+/i, 'output=csv');
+    if (!/output=csv/i.test(url)) url += (url.includes('?') ? '&' : '?') + 'output=csv';
+    return url;
+  }
+  const match = url.match(/docs\.google\.com\/spreadsheets\/d\/([^/]+)/);
+  if (match) {
+    const gidMatch = url.match(/[?#&]gid=([^&]+)/);
+    const gid = gidMatch ? gidMatch[1] : '0';
+    return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv&gid=${gid}`;
+  }
+  return url;
+}
 
-        resultsEl.appendChild(card);
-      });
+function makeGoogleSheetHtmlUrl(rawUrl) {
+  let url = rawUrl.trim();
+  if (!url) return url;
+  if (url.includes('/pubhtml')) return url;
+  if (url.includes('/pub')) {
+    url = url.replace('/pub?', '/pubhtml?');
+    url = url.replace(/output=[^&]+/i, 'widget=true');
+    if (!/widget=true/i.test(url)) url += (url.includes('?') ? '&' : '?') + 'widget=true';
+    return url;
+  }
+  return url;
+}
+
+function isProbablyHtml(text) {
+  const t = String(text || '').trim().slice(0, 500).toLowerCase();
+  return t.includes('<!doctype html') || t.includes('<html') || t.includes('<table') || t.includes('<body');
+}
+
+function isProbablyJson(text) {
+  const t = String(text || '').trim();
+  return t.startsWith('{') || t.startsWith('[');
+}
+
+function parseAppsScriptJson(text, songCol, artistCol) {
+  let data;
+  try { data = JSON.parse(text); }
+  catch (e) { return { ok: false, headers: [], songs: [], reason: 'Response looked like JSON, but could not be parsed.' }; }
+  if (data && (data.ok === false || data.status === 'error')) return { ok: false, headers: data.headers || [], songs: [], reason: data.error || data.message || 'Apps Script returned an error.' };
+  // Handle {status:'ok', rows:[...]} shape
+  if (data && data.status === 'ok' && Array.isArray(data.rows) && data.rows.length > 0) {
+    const headers = Object.keys(data.rows[0]).map(cleanCell);
+    const rows = [headers].concat(data.rows.map(obj => headers.map(h => cleanCell(obj[h]))));
+    return parseSongRows(rows, songCol, artistCol);
+  }
+  let rows = [], headers = [];
+  if (data && Array.isArray(data.headers) && Array.isArray(data.rows)) {
+    headers = data.headers.map(cleanCell);
+    rows = [headers].concat(data.rows.map(obj => headers.map(h => cleanCell(obj[h]))));
+    return parseSongRows(rows, songCol, artistCol);
+  }
+  if (Array.isArray(data) && data.length && typeof data[0] === 'object' && !Array.isArray(data[0])) {
+    headers = Object.keys(data[0]).map(cleanCell);
+    rows = [headers].concat(data.map(obj => headers.map(h => cleanCell(obj[h]))));
+    return parseSongRows(rows, songCol, artistCol);
+  }
+  if (Array.isArray(data) && Array.isArray(data[0])) {
+    return parseSongRows(data.map(row => row.map(cleanCell)), songCol, artistCol);
+  }
+  return { ok: false, headers: [], songs: [], reason: 'JSON shape was not recognized.' };
+}
+
+function parsePublishedSheetHtml(html, songCol, artistCol) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const table = doc.querySelector('table');
+  if (!table) return { ok: false, headers: [], songs: [], reason: 'No table found in the published Google Sheet page.' };
+  const rows = Array.from(table.querySelectorAll('tr'))
+    .map(tr => Array.from(tr.querySelectorAll('td, th')).map(cell => cleanCell(cell.textContent)))
+    .filter(row => row.some(cell => cell !== ''));
+  let headerRowIndex = 0;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const joined = rows[i].map(normalizeHeader).join(' ');
+    if (joined.includes('song') || joined.includes('title') || joined.includes('artist') || joined.includes('request')) {
+      headerRowIndex = i; break;
     }
+  }
+  return parseSongRows(rows.slice(headerRowIndex), songCol, artistCol);
+}
 
-    // ── Select a track ──
-    function selectTrack(card, track) {
-      document.querySelectorAll('.track-card').forEach(c => {
-        c.classList.remove('selected');
-        const svg = c.querySelector('.track-check svg');
-        if (svg) svg.style.opacity = '0';
-      });
+function parseFetchedSheetText(text, songCol, artistCol) {
+  if (isProbablyJson(text)) return parseAppsScriptJson(text, songCol, artistCol);
+  if (isProbablyHtml(text)) return parsePublishedSheetHtml(text, songCol, artistCol);
+  return parseCSV(text, songCol, artistCol);
+}
 
-      card.classList.add('selected');
-      const svg = card.querySelector('.track-check svg');
-      if (svg) svg.style.opacity = '1';
+async function loadSheet(silent = false) {
+  const rawUrl = document.getElementById('sheet-url').value.trim();
+  const isAppsScriptUrl = rawUrl.includes('script.google.com/macros/');
+  const csvUrl = isAppsScriptUrl ? rawUrl : normalizeGoogleSheetCsvUrl(rawUrl);
+  const htmlUrl = isAppsScriptUrl ? rawUrl : makeGoogleSheetHtmlUrl(rawUrl);
+  const songCol = document.getElementById('sheet-col-song').value.trim();
+  const artistCol = document.getElementById('sheet-col-artist').value.trim();
+  if (!rawUrl) { if (!silent) setSheetStatus('Paste a URL first.', 'err'); return; }
+  storageSet(STORAGE_KEYS.sheetUrl, rawUrl);
+  if (!silent) setSheetStatus('Fetching…', '');
+  let parsed = null, lastFetchError = '';
+  const urlsToTry = [
+    csvUrl, htmlUrl,
+    `https://corsproxy.io/?${encodeURIComponent(csvUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(htmlUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(htmlUrl)}`
+  ].filter((v, i, a) => v && a.indexOf(v) === i);
+  for (const tryUrl of urlsToTry) {
+    try {
+      const res = await fetch(tryUrl);
+      const text = await res.text();
+      if (!res.ok || !text) { lastFetchError = `Fetch failed. Status: ${res.status}`; continue; }
+      const attempt = parseFetchedSheetText(text, songCol, artistCol);
+      if (attempt.ok && attempt.songs.length) { parsed = attempt; break; }
+      const preview = cleanCell(text.slice(0, 180)).replace(/\s+/g, ' ');
+      lastFetchError = attempt.reason || (attempt.headers && attempt.headers.length
+        ? `Fetched data, but column names did not match. Headers: ${attempt.headers.join(' | ')}`
+        : `Could not find sheet rows. Preview: ${preview}`);
+    } catch(e) { lastFetchError = e.message || String(e); }
+  }
+  if (!parsed) {
+    if (!silent) setSheetStatus(`Could not read the sheet. Use "Paste from Sheet" as fallback. Last error: ${lastFetchError}`, 'err');
+    return;
+  }
+  // Filter out already-known songs (skipping = no re-scan)
+  const newSongs = parsed.songs.filter(s => !alreadyInLists(s.song, s.artist));
+  if (newSongs.length === 0) {
+    if (!silent) setSheetStatus(`Fetched ${parsed.songs.length} songs — all already checked. Pool: ${pool.length}.`, 'ok');
+    return;
+  }
+  if (!silent) setSheetStatus(`Fetched ${parsed.songs.length} songs. ${newSongs.length} new. Checking…`, '');
+  else setSheetStatus(`Auto-fetched: ${newSongs.length} new song${newSongs.length !== 1 ? 's' : ''} found. Checking…`, '');
+  await processBatch(newSongs, silent);
+  if (!silent) setSheetStatus(`Done. ${pool.length} approved, ${flagged.length} flagged.`, 'ok');
+  else setSheetStatus(`Auto-fetch done. ${pool.length} approved, ${flagged.length} flagged.`, 'ok');
+}
 
-      selectedTrack = track;
-      updateSubmitPanel();
+// ── AUTO-FETCH ──
+let autoFetchActive = false;
+
+function clickAutofetchDisk() {
+  autoFetchActive = !autoFetchActive;
+  const wrap = document.getElementById('autofetch-disk-wrap');
+  const svg  = document.getElementById('autofetch-disk-svg');
+  const lbl  = document.getElementById('autofetch-disk-label');
+  const sel  = document.getElementById('autofetch-interval');
+  const GREEN = '#34d399';
+  const RED   = '#f87171';
+  const labelParts = ['af-disk-label','af-disk-top','af-disk-bot','af-disk-lft','af-disk-rgt','af-disk-hi'];
+  if (autoFetchActive) {
+    wrap.classList.add('af-active');
+    svg.classList.remove('af-paused');
+    svg.classList.add('af-spinning');
+    lbl.classList.add('af-active');
+    lbl.innerHTML = 'AUTO<br>ON';
+    sel.style.display = 'block';
+    labelParts.forEach(id => { const el = document.getElementById(id); if(el) el.setAttribute('fill', GREEN); });
+    startAutoFetch();
+  } else {
+    wrap.classList.remove('af-active');
+    svg.classList.remove('af-spinning');
+    svg.classList.add('af-paused');
+    lbl.classList.remove('af-active');
+    lbl.innerHTML = 'AUTO<br>OFF';
+    sel.style.display = 'none';
+    labelParts.forEach(id => { const el = document.getElementById(id); if(el) el.setAttribute('fill', RED); });
+    stopAutoFetch();
+  }
+}
+
+function toggleAutoFetch() { clickAutofetchDisk(); }
+
+function startAutoFetch() {
+  stopAutoFetch();
+  const intervalSec = parseInt(document.getElementById('autofetch-interval').value, 10) || 30;
+  const dot = document.getElementById('autofetch-dot');
+  const label = document.getElementById('autofetch-label');
+  dot.classList.add('active');
+  label.textContent = `Auto-fetching every ${intervalSec}s`;
+  autoFetchTimer = setInterval(async () => {
+    dot.classList.remove('active');
+    dot.classList.add('fetching');
+    await loadSheet(true);
+    dot.classList.remove('fetching');
+    dot.classList.add('active');
+  }, intervalSec * 1000);
+}
+
+function stopAutoFetch() {
+  if (autoFetchTimer) { clearInterval(autoFetchTimer); autoFetchTimer = null; }
+  const dot = document.getElementById('autofetch-dot');
+  dot.classList.remove('active', 'fetching');
+  document.getElementById('autofetch-label').textContent = 'Auto-fetch: use the disk on the left';
+}
+
+function restartAutoFetch() {
+  if (autoFetchActive) startAutoFetch();
+}
+
+// ── PASTE LOAD ──
+async function loadPaste() {
+  const raw = document.getElementById('paste-box').value.trim();
+  const songCol = document.getElementById('paste-col-song').value.trim().toLowerCase();
+  const artistCol = document.getElementById('paste-col-artist').value.trim().toLowerCase();
+  if (!raw) return;
+  const rows = raw.split('\n').map(r => r.split('\t').map(c => cleanCell(c)));
+  const parsed = parseSongRows(rows, songCol, artistCol);
+  if (!parsed.ok) { showError(`Column not found. Headers found: ${parsed.headers.join(', ')}`); return; }
+  if (!parsed.songs.length) { showError('No song rows found.'); return; }
+  await processBatch(parsed.songs);
+  document.getElementById('paste-box').value = '';
+}
+
+// ── MANUAL ADD ──
+async function addManual() {
+  const s = document.getElementById('song-input').value.trim();
+  const a = document.getElementById('artist-input').value.trim();
+  if (!s) return;
+  document.getElementById('song-input').value = '';
+  document.getElementById('artist-input').value = '';
+  const bar = document.getElementById('checking-bar');
+  bar.style.display = 'flex';
+  document.getElementById('checking-text').textContent = `Checking: ${s}…`;
+  await processAndAdd(s, a || '—');
+  bar.style.display = 'none';
+}
+
+// ── CSV PARSING ──
+function cleanCell(value) {
+  return String(value || '')
+    .replace(/^﻿/, '').replace(/[""]/g, '"').replace(/['']/g, "'")
+    .replace(/^"|"$/g, '').trim();
+}
+function normalizeHeader(value) {
+  return cleanCell(value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function parseCSV(csv, songCol, artistCol) {
+  const rows = [];
+  let row = [], cur = '', inQ = false;
+  for (let i = 0; i < csv.length; i++) {
+    const ch = csv[i], next = csv[i + 1];
+    if (ch === '"' && inQ && next === '"') { cur += '"'; i++; }
+    else if (ch === '"') { inQ = !inQ; }
+    else if (ch === ',' && !inQ) { row.push(cleanCell(cur)); cur = ''; }
+    else if ((ch === '\n' || ch === '\r') && !inQ) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cleanCell(cur));
+      if (row.some(cell => cell !== '')) rows.push(row);
+      row = []; cur = '';
+    } else { cur += ch; }
+  }
+  row.push(cleanCell(cur));
+  if (row.some(cell => cell !== '')) rows.push(row);
+  return parseSongRows(rows, songCol, artistCol);
+}
+
+function findColumn(headers, requested, fallbackWords) {
+  const wanted = normalizeHeader(requested);
+  let idx = headers.findIndex(h => normalizeHeader(h) === wanted);
+  if (idx !== -1) return idx;
+  idx = headers.findIndex(h => {
+    const n = normalizeHeader(h);
+    return fallbackWords.some(word => n.includes(word));
+  });
+  return idx;
+}
+
+function parseSongRows(rows, songCol, artistCol) {
+  if (!rows || !rows.length) return { ok: false, headers: [], songs: [] };
+  const headers = rows[0].map(cleanCell);
+  const si = findColumn(headers, songCol, ['song', 'title', 'track', 'request']);
+  const ai = findColumn(headers, artistCol, ['artist', 'singer', 'band', 'performer']);
+  if (si === -1) return { ok: false, headers, songs: [] };
+  const songs = [];
+  for (let i = 1; i < rows.length; i++) {
+    const s = cleanCell(rows[i][si]);
+    const a = ai !== -1 ? cleanCell(rows[i][ai]) : '';
+    if (s) songs.push({ song: s, artist: a || '—' });
+  }
+  return { ok: true, headers, songs };
+}
+
+// ── BATCH PROCESSOR ──
+async function processBatch(songs, silent = false) {
+  const bar = document.getElementById('checking-bar');
+  const txt = document.getElementById('checking-text');
+  bar.style.display = 'flex';
+  let added = 0, skipped = 0, cached = 0;
+  const CHUNK = 5; // parallel requests per batch
+  let done = 0;
+
+  for (let i = 0; i < songs.length; i += CHUNK) {
+    const chunk = songs.slice(i, i + CHUNK);
+    txt.textContent = `Checking ${i + 1}–${Math.min(i + CHUNK, songs.length)} of ${songs.length}…`;
+
+    const results = await Promise.all(chunk.map(s => processAndAdd(s.song, s.artist)));
+    for (const status of results) {
+      if (status === 'skipped') skipped++;
+      else if (status === 'cached') cached++;
+      else added++;
+      done++;
     }
+    // Re-render after each chunk so pool updates visually as scans complete
+    renderPool(); renderFlagged(); renderDenied(); saveAppState(); updateStorageHint(); updatePickStats();
+  }
 
-    // ── Submit panel ──
-    function updateSubmitPanel() {
-      if (selectedTrack) {
-        submitLabel.innerHTML = `<strong>${escHtml(selectedTrack.name)}</strong> — ${escHtml(selectedTrack.artists)}`;
-        submitPanel.classList.add('visible');
+  bar.style.display = 'none';
+  if (!silent && (skipped || cached)) {
+    setSheetStatus(`Done. ${added} new, ${cached} from cache, ${skipped} skipped (already in list).`, 'ok');
+  }
+}
+
+function alreadyInLists(song, artist) {
+  const key = normalizeSongKey(song, artist);
+  return pool.some(r => normalizeSongKey(r.song, r.artist) === key)
+    || flagged.some(r => normalizeSongKey(r.song, r.artist) === key)
+    || history.some(r => normalizeSongKey(r.song, r.artist) === key)
+    || denied.some(r => normalizeSongKey(r.song, r.artist) === key);
+}
+
+function addCachedResult(song, artist, cached) {
+  if (!cached) return false;
+  if (cached.status === 'approved') {
+    pool.push({
+      song, artist: artist || cached.artist || '—',
+      hadLyrics: !!cached.hadLyrics,
+      reputationOverview: cached.reputationOverview || 'Previously approved.',
+      possibleDiscrepancies: cached.possibleDiscrepancies || [],
+      confidence: cached.confidence || 'medium',
+      energy: cached.energy || 'unknown',
+      addedAt: cached.addedAt || Date.now()
+    });
+    return true;
+  }
+  if (cached.status === 'flagged') {
+    flagged.push({
+      song, artist: artist || cached.artist || '—',
+      reason: cached.reason || 'Previously flagged',
+      hadLyrics: !!cached.hadLyrics,
+      reputationOverview: cached.reputationOverview || '',
+      possibleDiscrepancies: cached.possibleDiscrepancies || [],
+      confidence: cached.confidence || 'medium',
+      energy: cached.energy || 'unknown',
+      addedAt: cached.addedAt || Date.now()
+    });
+    return true;
+  }
+  if (cached.status === 'denied') {
+    // Denied songs are cached too — restore to denied list rather than re-scanning
+    addToDenied({
+      song, artist: artist || cached.artist || '—',
+      reason: cached.reason || 'Previously denied by content filter',
+      hadLyrics: !!cached.hadLyrics,
+      reputationOverview: cached.reputationOverview || '',
+      possibleDiscrepancies: cached.possibleDiscrepancies || [],
+      confidence: cached.confidence || 'medium',
+      energy: cached.energy || 'unknown',
+      addedAt: cached.addedAt || Date.now()
+    });
+    return true;
+  }
+  return false;
+}
+
+// ── BUILD VIBE CONTEXT ──
+function buildVibeContext() {
+  const eventType = document.getElementById('event-type').value;
+  const customEventType = document.getElementById('event-type-custom').value.trim();
+  const vibePrompt = document.getElementById('vibe-prompt').value.trim();
+  const playlistUrl = document.getElementById('playlist-url').value.trim();
+  let context = eventType === 'custom' && customEventType
+    ? `This is a custom event: "${customEventType}". Use your best judgment on what is appropriate for this crowd.`
+    : (EVENT_VIBE_PROMPTS[eventType] || EVENT_VIBE_PROMPTS['mixed']);
+  context += '\n\nGenre viability reference:\n' + DEFAULT_GENRE_VIBE;
+  if (playlistTracks.length > 0) {
+    context += `\n\nReference playlist tracks (use as vibe benchmark — songs similar in energy/genre to these are high viability):\n${playlistTracks.slice(0, 40).join(', ')}`;
+  } else if (playlistUrl) {
+    context += `\n\nA playlist was provided (${playlistUrl}) but tracks could not be fetched. Use built-in genre defaults.`;
+  }
+  if (vibePrompt) context += `\n\nAdditional context from the DJ: ${vibePrompt}`;
+  return context;
+}
+
+// ── CLAUDE CHECK (via server-side proxy) ──
+async function checkWithClaude(song, artist) {
+  const vibeContext = buildVibeContext();
+  const res = await fetch('/.netlify/functions/claude-check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ song, artist, filterMode, vibeContext })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Check failed (${res.status}): ${err}`);
+  }
+  return await res.json();
+}
+
+// ── PROCESS ONE SONG ──
+async function processAndAdd(song, artist) {
+  clearError();
+  const key = normalizeSongKey(song, artist);
+  if (alreadyInLists(song, artist)) return 'skipped';
+  if (scanCache[key]) {
+    const used = addCachedResult(song, artist, scanCache[key]);
+    if (used) { renderPool(); renderFlagged(); saveAppState(); updateStorageHint(); updatePickStats(); return 'cached'; }
+  }
+  try {
+    const result = await checkWithClaude(song, artist);
+    const review = {
+      song, artist: artist || '—',
+      hadLyrics: false,
+      reputationOverview: result.reputationOverview || 'No overview provided.',
+      possibleDiscrepancies: Array.isArray(result.possibleDiscrepancies) ? result.possibleDiscrepancies : [],
+      confidence: result.confidence || 'medium',
+      energy: result.energy || 'unknown',
+      vibeNote: result.vibeNote || '',
+      addedAt: Date.now()
+    };
+    if (filterMode === 'nofilter' || result.appropriate) {
+      pool.push(review);
+      scanCache[key] = { status: 'approved', ...review };
+    } else {
+      // Auto-deny: inappropriate songs go straight to denied pool
+      const reason = result.reason || 'Auto-denied by content filter';
+      const deniedReview = { ...review, reason };
+      addToDenied(deniedReview);
+      scanCache[key] = { status: 'denied', ...deniedReview };
+    }
+  } catch(e) {
+    showError(`Error checking "${song}":\n${e.message}`);
+    flagged.push({ song, artist: artist || '—', reason: 'Check failed — review manually', hadLyrics: false, energy: 'unknown', addedAt: Date.now() });
+  }
+  renderPool(); renderFlagged(); renderDenied(); saveAppState(); updateStorageHint(); updatePickStats();
+  return 'new';
+}
+
+// ── POOL ACTIONS ──
+function approveFlag(idx) {
+  const item = flagged[idx];
+  const approved = {
+    song: item.song, artist: item.artist, hadLyrics: item.hadLyrics,
+    reputationOverview: item.reputationOverview || 'Manually approved after review.',
+    possibleDiscrepancies: item.possibleDiscrepancies && item.possibleDiscrepancies.length
+      ? item.possibleDiscrepancies
+      : [`Manually approved after being flagged: ${item.reason || 'review recommended'}`],
+    confidence: item.confidence || 'manual',
+    energy: item.energy || 'unknown',
+    vibeNote: item.vibeNote || '',
+    addedAt: item.addedAt || Date.now()
+  };
+  pool.push(approved);
+  scanCache[normalizeSongKey(item.song, item.artist)] = { status: 'approved', ...approved };
+  flagged.splice(idx, 1);
+  renderPool(); renderFlagged(); saveAppState(); updateStorageHint(); updatePickStats();
+}
+
+function removeFlag(idx) { flagged.splice(idx, 1); renderFlagged(); saveAppState(); }
+function removeFromPool(idx) { pool.splice(idx, 1); renderPool(); saveAppState(); updatePickStats(); }
+
+// ── DENY ACTIONS ──
+function denyFromPool(idx) {
+  const item = pool[idx];
+  addToDenied(item);
+  pool.splice(idx, 1);
+  renderPool(); renderDenied(); saveAppState(); updatePickStats();
+}
+
+function denyFromFlagged(idx) {
+  const item = flagged[idx];
+  addToDenied(item);
+  flagged.splice(idx, 1);
+  renderFlagged(); renderDenied(); saveAppState();
+}
+
+function addToDenied(item) {
+  const key = normalizeSongKey(item.song, item.artist);
+  const existing = denied.findIndex(r => normalizeSongKey(r.song, r.artist) === key);
+  if (existing !== -1) {
+    denied[existing].deniedCount = (denied[existing].deniedCount || 1) + 1;
+  } else {
+    denied.push({ ...item, deniedCount: 1 });
+  }
+  // Mark in cache so re-submissions are flagged as already-known
+  scanCache[key] = { ...(scanCache[key] || {}), status: 'denied' };
+}
+
+function removeFromDenied(idx) {
+  const item = denied[idx];
+  // Remove from denied
+  denied.splice(idx, 1);
+  // Clear denied status from cache so it can be re-processed if submitted again
+  const key = normalizeSongKey(item.song, item.artist);
+  if (scanCache[key]) delete scanCache[key];
+  renderDenied(); saveAppState();
+}
+
+function restoreFromDenied(idx) {
+  const item = denied[idx];
+  const key = normalizeSongKey(item.song, item.artist);
+  // Restore to approved pool without re-scanning
+  const restored = { ...item, addedAt: Date.now() };
+  delete restored.deniedCount;
+  pool.push(restored);
+  denied.splice(idx, 1);
+  scanCache[key] = { status: 'approved', ...restored };
+  renderPool(); renderDenied(); saveAppState(); updatePickStats();
+}
+
+// ── ENERGY BADGE ──
+// Numeric scale: high=8-10, mid=4-7, slow=1-3, unknown=?
+// We use a deterministic pseudo-number based on the energy tier
+function energyNumber(energy) {
+  if (energy === 'high') return '9';
+  if (energy === 'mid')  return '6';
+  if (energy === 'slow') return '2';
+  return '?';
+}
+function energyBadgeHtml(energy) {
+  const map = {
+    high:    { label: '⚡ HIGH',  num: '9', cls: 'high' },
+    mid:     { label: '🎵 MID',   num: '6', cls: 'mid' },
+    slow:    { label: '💎 SLOW',  num: '2', cls: 'slow' },
+    unknown: { label: '? ———',   num: '?', cls: 'unknown' }
+  };
+  const e = map[energy] || map.unknown;
+  return `<span class="energy-num ${e.cls}" title="Energy level">${e.num}</span><span class="badge badge-ok" style="font-size:10px;">${e.label}</span>`;
+}
+
+// ── RENDER ──
+const ENERGY_ORDER = { high: 0, mid: 1, slow: 2, unknown: 3 };
+function renderPool() {
+  const el = document.getElementById('song-list');
+  document.getElementById('pool-count').textContent = pool.length;
+  if (!pool.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">No approved songs yet.</span>'; return; }
+
+  const sortVal   = (document.getElementById('pool-sort')   || {}).value || 'added';
+  const filterVal = (document.getElementById('pool-filter') || {}).value || 'all';
+
+  // Build indexed pairs so buttons reference original pool index
+  let pairs = pool.map((r, i) => ({ r, i }));
+
+  // Filter
+  if (filterVal === 'unplayed') pairs = pairs.filter(p => !p.r.played);
+  else if (filterVal === 'played') pairs = pairs.filter(p => p.r.played);
+  else if (['high','mid','slow'].includes(filterVal)) pairs = pairs.filter(p => p.r.energy === filterVal);
+
+  // Sort
+  if (sortVal === 'energy-high') pairs.sort((a, b) => (ENERGY_ORDER[a.r.energy]??3) - (ENERGY_ORDER[b.r.energy]??3));
+  else if (sortVal === 'energy-low') pairs.sort((a, b) => (ENERGY_ORDER[b.r.energy]??3) - (ENERGY_ORDER[a.r.energy]??3));
+  else if (sortVal === 'name') pairs.sort((a, b) => a.r.song.localeCompare(b.r.song));
+  else pairs.sort((a, b) => (b.r.addedAt || 0) - (a.r.addedAt || 0)); // newest first
+
+  if (!pairs.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">No songs match this filter.</span>'; return; }
+
+  el.innerHTML = pairs.map(({ r, i }) => {
+    const overview = escapeHtml(r.reputationOverview || 'Approved under conservative review.');
+    const discrepancies = escapeHtml(formatDiscrepancies(r.possibleDiscrepancies));
+    const confidence = escapeHtml(r.confidence || 'medium');
+    const vibe = r.vibeNote ? `<br><strong>Vibe:</strong> ${escapeHtml(r.vibeNote)}` : '';
+    const energyClass = ['high','mid','slow'].includes(r.energy) ? ` energy-${r.energy}` : '';
+    const playedClass = r.played ? ' played' : '';
+    const playedIcon = r.played ? '✓' : '○';
+    const playedTitle = r.played ? 'Mark as unplayed' : 'Mark as played';
+    return `<div class="song-row${energyClass}${playedClass}">
+      <button class="btn-played${r.played ? ' is-played' : ''}" onclick="togglePlayed(${i})" title="${playedTitle}">${playedIcon}</button>
+      <span class="sname">${escapeHtml(r.song)}</span>
+      <span class="sartist">${r.artist !== '—' ? escapeHtml(r.artist) : ''}</span>
+      ${energyBadgeHtml(r.energy)}
+      <span class="badge ${r.hadLyrics ? 'badge-lyrics' : 'badge-ok'}">${r.hadLyrics ? 'lyrics read' : 'knowledge only'}</span>
+      <span class="song-ts">${formatTs(r.addedAt)}</span>
+      <button class="sm deny-btn" onclick="denyFromPool(${i})" title="Deny this song">&#128683;</button>
+      <button class="sm remove" onclick="removeFromPool(${i})" title="Remove">&#x2715;</button>
+      <div class="review-meta"><strong>Reputation:</strong> ${overview} <strong>Confidence:</strong> ${confidence}${vibe}<br><span class="discrepancy"><strong>Possible discrepancies:</strong> ${discrepancies}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderFlagged() {
+  const el = document.getElementById('flagged-list');
+  document.getElementById('flagged-count').textContent = flagged.length;
+  if (!flagged.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">Nothing flagged.</span>'; return; }
+  el.innerHTML = flagged.map((r, i) => {
+    const overview = escapeHtml(r.reputationOverview || 'Flagged for manual review.');
+    const discrepancies = escapeHtml(formatDiscrepancies(r.possibleDiscrepancies));
+    return `<div class="song-row">
+      <span class="sname">${escapeHtml(r.song)}</span>
+      <span class="sartist">${r.artist !== '—' ? escapeHtml(r.artist) : ''}</span>
+      <span class="sreason">${escapeHtml(r.reason)}</span>
+      ${energyBadgeHtml(r.energy)}
+      <span class="song-ts">${formatTs(r.addedAt)}</span>
+      <button class="sm approve" onclick="approveFlag(${i})" title="Approve anyway">&#10003;</button>
+      <button class="sm deny-btn" onclick="denyFromFlagged(${i})" title="Deny this song">&#128683;</button>
+      <button class="sm remove" onclick="removeFlag(${i})" title="Remove">&#x2715;</button>
+      <div class="review-meta"><strong>Reputation:</strong> ${overview}<br><span class="discrepancy"><strong>Possible discrepancies:</strong> ${discrepancies}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDenied() {
+  const el = document.getElementById('denied-list');
+  document.getElementById('denied-count').textContent = denied.length;
+  if (!denied.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">Nothing denied yet.</span>'; return; }
+  el.innerHTML = denied.map((r, i) => {
+    const count = r.deniedCount || 1;
+    const countBadge = count > 1
+      ? `<span class="deny-count-badge" title="${count}x denied">${count}</span>`
+      : '';
+    const overview = escapeHtml(r.reputationOverview || '');
+    return `<div class="song-row denied-row">
+      ${countBadge}
+      <span class="sname">${escapeHtml(r.song)}</span>
+      <span class="sartist">${r.artist !== '—' ? escapeHtml(r.artist) : ''}</span>
+      ${energyBadgeHtml(r.energy)}
+      <span class="song-ts">${formatTs(r.addedAt)}</span>
+      <button class="sm approve" onclick="restoreFromDenied(${i})" title="Restore to approved pool">&#8617; Restore</button>
+      <button class="sm remove" onclick="removeFromDenied(${i})" title="Remove from denied (forget)">&#x2715;</button>
+      ${overview ? `<div class="review-meta">${overview}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── SPOTIFY ──
+function spotifySearchQuery(song, artist) {
+  return `${song || ''} ${artist && artist !== '—' ? artist : ''}`.trim();
+}
+function spotifyWebSearchUrl(song, artist) {
+  return `https://open.spotify.com/search/${encodeURIComponent(spotifySearchQuery(song, artist))}`;
+}
+function spotifyAppSearchUri(song, artist) {
+  return `spotify:search:${encodeURIComponent(spotifySearchQuery(song, artist))}`;
+}
+function openSpotifyPicked(song, artist) {
+  const appUri = spotifyAppSearchUri(song, artist);
+  const webUrl = spotifyWebSearchUrl(song, artist);
+  const started = Date.now();
+  window.location.href = appUri;
+  setTimeout(() => {
+    if (Date.now() - started < 2000 && !document.hidden) window.open(webUrl, '_blank', 'noopener,noreferrer');
+  }, 900);
+}
+
+// ── PICK ──
+function pickSong() {
+  const eligible = poolForVibe();
+  if (!eligible.length) return;
+  const pickedItem = eligible[Math.floor(Math.random() * eligible.length)];
+  const idx = pool.indexOf(pickedItem);
+  lastPicked = { ...pool[idx], idx };
+  const picked = pool.splice(idx, 1)[0];
+  history.unshift(picked);
+  const safeSongArg = JSON.stringify(picked.song);
+  const safeArtistArg = JSON.stringify(picked.artist);
+  document.getElementById('pick-display').innerHTML =
+    `<div class="pick-song">${escapeHtml(picked.song)}</div>` +
+    (picked.artist !== '—' ? `<div class="pick-artist">${escapeHtml(picked.artist)}</div>` : '') +
+    `<div style="margin-top:4px;">${energyBadgeHtml(picked.energy)}</div>` +
+    `<button class="spotify-link" onclick='openSpotifyPicked(${safeSongArg}, ${safeArtistArg})'>Open in Spotify App</button>`;
+  document.getElementById('undo-btn').disabled = false;
+  renderPool(); renderHistory(); saveAppState(); updatePickStats();
+}
+
+function undoPick() {
+  if (!lastPicked) return;
+  history.shift();
+  pool.splice(Math.min(lastPicked.idx, pool.length), 0, {
+    song: lastPicked.song, artist: lastPicked.artist,
+    hadLyrics: lastPicked.hadLyrics, energy: lastPicked.energy,
+    vibeNote: lastPicked.vibeNote || ''
+  });
+  lastPicked = null;
+  document.getElementById('pick-display').innerHTML = '<span class="pick-empty">Pick undone.</span>';
+  document.getElementById('undo-btn').disabled = true;
+  renderPool(); renderHistory(); saveAppState(); updatePickStats();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!history.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">Nothing played yet.</span>'; return; }
+  el.innerHTML = history.map(r =>
+    `<div class="history-item">
+      <span class="hs">${escapeHtml(r.song)}</span>
+      ${energyBadgeHtml(r.energy)}
+      <span class="ha">${r.artist !== '—' ? escapeHtml(r.artist) : ''}</span>
+    </div>`
+  ).join('');
+}
+
+// ── SUGGESTION PANEL ──
+let suggestOpen = false;
+let suggestTimer = null;
+let lastSuggestFetch = 0;
+
+function toggleSuggestDropdown() {
+  suggestOpen = !suggestOpen;
+  const dd = document.getElementById('suggest-dropdown');
+  const rec = document.getElementById('record-svg');
+  dd.classList.toggle('open', suggestOpen);
+  rec.classList.toggle('record-paused', suggestOpen);
+  if (suggestOpen && Date.now() - lastSuggestFetch > 30000) fetchSuggestions();
+}
+
+async function fetchSuggestions() {
+  const listEl = document.getElementById('suggest-list');
+  const footer = document.getElementById('suggest-footer');
+  listEl.innerHTML = '<div class="suggest-loading"><div class="spinner" style="display:inline-block;vertical-align:middle;margin-right:6px;"></div> Thinking…</div>';
+  lastSuggestFetch = Date.now();
+  try {
+    const vibeContext = buildVibeContext();
+    const res = await fetch('/.netlify/functions/get-suggestions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        history: history.slice(-10),
+        pool: pool.slice(0, 20),
+        vibeContext,
+        filterMode
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    renderSuggestions(data.suggestions || []);
+    const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    footer.textContent = `Updated ${t} · refreshes every 2 min`;
+  } catch(e) {
+    listEl.innerHTML = `<div class="suggest-loading" style="color:var(--danger);">Could not load suggestions.</div>`;
+  }
+}
+
+function renderSuggestions(suggestions) {
+  const el = document.getElementById('suggest-list');
+  if (!suggestions.length) { el.innerHTML = '<div class="suggest-loading">No suggestions yet — play some songs first.</div>'; return; }
+  el.innerHTML = suggestions.map((s, i) => {
+    const cls = s.energy || 'unknown';
+    return `<div class="suggest-item" id="sug-${i}" onclick="addSuggestion(${i}, ${JSON.stringify(s.song)}, ${JSON.stringify(s.artist)}, ${JSON.stringify(s.energy || 'unknown')})">
+      <div class="suggest-song"><span class="suggest-energy ${cls}"></span>${escapeHtml(s.song)}</div>
+      <div class="suggest-artist">${escapeHtml(s.artist)}</div>
+      <div class="suggest-reason">${escapeHtml(s.reason || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+function addSuggestion(idx, song, artist, energy) {
+  // Suggestions are already Claude-vetted — add directly to approved pool, no rescan
+  const key = normalizeSongKey(song, artist);
+  if (alreadyInLists(song, artist)) {
+    const item = document.getElementById(`sug-${idx}`);
+    if (item) { item.classList.add('suggest-adding'); item.querySelector('.suggest-reason').textContent = '✓ Already in pool'; }
+    return;
+  }
+  const entry = {
+    song, artist: artist || '—',
+    hadLyrics: false,
+    reputationOverview: 'Added from DJ suggestions.',
+    possibleDiscrepancies: [],
+    confidence: 'high',
+    energy: energy || 'unknown',
+    vibeNote: 'Suggested based on recent play history and vibe.',
+    addedAt: Date.now()
+  };
+  pool.push(entry);
+  scanCache[key] = { status: 'approved', ...entry };
+  renderPool(); renderFlagged(); renderDenied(); saveAppState(); updateStorageHint(); updatePickStats();
+  // Visual feedback before closing
+  const item = document.getElementById(`sug-${idx}`);
+  if (item) {
+    item.classList.add('suggest-adding');
+    item.querySelector('.suggest-reason').textContent = '✓ Added to pool!';
+  }
+  // Panel stays open so the user can add more songs
+}
+
+// Auto-refresh suggestions every 2 minutes when panel is open
+function startSuggestTimer() {
+  suggestTimer = setInterval(() => {
+    if (suggestOpen) fetchSuggestions();
+  }, 120000);
+}
+
+// Close suggestion panel on outside click
+document.addEventListener('click', e => {
+  if (suggestOpen && !document.getElementById('record-panel-wrap').contains(e.target)) {
+    suggestOpen = false;
+    document.getElementById('suggest-dropdown').classList.remove('open');
+    document.getElementById('record-svg').classList.remove('record-paused');
+  }
+});
+
+// ── BULK IMPORT ──
+function toggleBulkImport() {
+  const area = document.getElementById('bulk-import-area');
+  area.classList.toggle('open');
+}
+
+async function runBulkImport() {
+  const raw = document.getElementById('bulk-input').value.trim();
+  if (!raw) return;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const songs = [];
+  for (const line of lines) {
+    // Try tab first, then " - " as separator
+    let song, artist;
+    if (line.includes('\t')) {
+      [song, artist] = line.split('\t').map(s => s.trim());
+    } else {
+      const dashIdx = line.indexOf(' - ');
+      if (dashIdx !== -1) {
+        song = line.slice(0, dashIdx).trim();
+        artist = line.slice(dashIdx + 3).trim();
       } else {
-        submitPanel.classList.remove('visible');
+        song = line.trim();
+        artist = '';
       }
     }
+    if (song && !alreadyInLists(song, artist || '—')) songs.push({ song, artist: artist || '—' });
+  }
+  if (!songs.length) { document.getElementById('bulk-progress').style.display = 'block'; document.getElementById('bulk-progress').textContent = 'All songs already in lists.'; return; }
+  const prog = document.getElementById('bulk-progress');
+  prog.style.display = 'block';
+  const bar = document.getElementById('checking-bar');
+  bar.style.display = 'flex';
+  for (let i = 0; i < songs.length; i++) {
+    const { song, artist } = songs[i];
+    prog.textContent = `Checking ${i + 1} of ${songs.length}: ${song}…`;
+    document.getElementById('checking-text').textContent = `Bulk: ${song}…`;
+    await processAndAdd(song, artist);
+  }
+  bar.style.display = 'none';
+  prog.textContent = `Done — ${songs.length} song${songs.length !== 1 ? 's' : ''} processed.`;
+  document.getElementById('bulk-input').value = '';
+  setTimeout(() => { prog.style.display = 'none'; document.getElementById('bulk-import-area').classList.remove('open'); }, 3000);
+}
 
-    // ── Submit ──
-    async function doSubmit() {
-      if (!selectedTrack || isSubmitting) return;
-      isSubmitting = true;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner"></span>Sending…';
+// ── CLEAR SCAN MEMORY ──
+function clickLightSwitch() {
+  const wrap = document.getElementById('lightswitch-wrap');
+  const svg  = document.getElementById('lightswitch-svg');
+  if (wrap.classList.contains('ls-active')) return; // mid-animation guard
 
-      try {
-        const res = await fetch('/.netlify/functions/submit-request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title:      selectedTrack.name,
-            artist:     selectedTrack.artists,
-            spotifyId:  selectedTrack.id,
-            spotifyUrl: selectedTrack.url
-          })
-        });
+  // Flip rocker to ON visually
+  const top  = document.getElementById('ls-rocker-top');
+  const bot  = document.getElementById('ls-rocker-bot');
+  const hi   = document.getElementById('ls-highlight');
+  const ind  = document.getElementById('ls-indicator');
+  const sparks = ['ls-spark1','ls-spark2','ls-spark3','ls-spark4'].map(id => document.getElementById(id));
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Submission failed');
+  // Rocker flips up
+  top.setAttribute('fill', '#8080c8');
+  bot.setAttribute('fill', '#3a3a58');
+  hi.setAttribute('y', '6');
+  ind.setAttribute('fill', '#fbbf24');
+  sparks.forEach(s => s.setAttribute('opacity', '1'));
 
-        showConfirm();
-      } catch (err) {
-        setStatus(err.message || 'Could not send request. Try again.', 'error');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send request';
-      } finally {
-        isSubmitting = false;
-      }
-    }
+  // Activate shimmer
+  wrap.classList.add('ls-active', 'ls-shimmer');
 
-    // ── Confirmation ──
-    function showConfirm() {
-      searchUI.style.display = 'none';
-      submitPanel.classList.remove('visible');
-      confirmTrack.innerHTML = `
-        <div class="track-title">${escHtml(selectedTrack.name)}</div>
-        <div class="track-artist" style="margin-top:4px;font-size:13px;color:var(--muted)">${escHtml(selectedTrack.artists)}</div>
-        <div class="track-meta" style="margin-top:4px;">${escHtml(selectedTrack.album)}</div>
-      `;
-      confirmScreen.classList.add('visible');
-    }
+  // Do the actual cache clear
+  handleClearCache();
 
-    function resetForm() {
-      confirmScreen.classList.remove('visible');
-      searchUI.style.display = '';
-      selectedTrack = null;
-      isSubmitting = false;
-      resultsEl.innerHTML = '';
-      searchInput.value = '';
-      setStatus('');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Send request';
-      updateSubmitPanel();
-    }
+  // Spring back after 700ms
+  setTimeout(() => {
+    wrap.classList.remove('ls-active', 'ls-shimmer');
+    top.setAttribute('fill', '#4a4a70');
+    bot.setAttribute('fill', '#6d6da0');
+    hi.setAttribute('y', '10');
+    ind.setAttribute('fill', '#3d3d50');
+    sparks.forEach(s => s.setAttribute('opacity', '0'));
+  }, 700);
+}
 
-    // ── Helpers ──
-    function setStatus(msg, type = '') {
-      statusMsg.textContent = msg;
-      statusMsg.className = type;
-    }
+function handleClearCache() {
+  const count = Object.keys(scanCache).length;
+  scanCache = {};
+  saveJson(STORAGE_KEYS.scanCache, {});
+  showError(`Scan memory cleared (${count} cached result${count !== 1 ? 's' : ''} removed). Songs will be re-scanned next time they're submitted.`);
+  setTimeout(() => { const eb = document.getElementById('error-box'); if (eb) eb.style.display = 'none'; }, 4000);
+}
 
-    function escHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
+// ── TOGGLE PLAYED ──
+function togglePlayed(idx) {
+  pool[idx].played = !pool[idx].played;
+  saveAppState();
+  renderPool();
+}
 
-    function formatDuration(ms) {
-      if (!ms) return '';
-      const m = Math.floor(ms / 60000);
-      const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
-      return `${m}:${s}`;
-    }
-  </script>
+// ── STARTUP ──
+loadSavedState();
+startSuggestTimer();
+
+document.getElementById('song-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const artist = document.getElementById('artist-input').value.trim();
+    if (artist) addManual(); else document.getElementById('artist-input').focus();
+  }
+});
+document.getElementById('artist-input').addEventListener('keydown', e => { if(e.key==='Enter') addManual(); });
+
+// Recalculate pill position on resize
+window.addEventListener('resize', () => setFilterMode(filterMode));
+</script>
 </body>
 </html>
