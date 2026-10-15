@@ -2213,7 +2213,8 @@ async function fetchSuggestions() {
         history: history.slice(-10),
         pool: pool.slice(0, 20),
         vibeContext,
-        filterMode
+        filterMode,
+        playlistTracks: playlistTracks.slice(0, 60)
       })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
