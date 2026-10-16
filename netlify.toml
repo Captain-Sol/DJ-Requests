@@ -3,6 +3,6 @@
   functions = "netlify/functions"
 
 [[redirects]]
-  from   = "/*"
-  to     = "/index.html"
+  from   = "/"
+  to     = "/picker.html"
   status = 200
