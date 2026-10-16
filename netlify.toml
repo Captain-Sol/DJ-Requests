@@ -1,8 +1,8 @@
-[build]
+][build]
   publish   = "public"
   functions = "netlify/functions"
 
 [[redirects]]
   from   = "/"
-  to     = "/picker.html"
+  to     = "/index.html"
   status = 200
