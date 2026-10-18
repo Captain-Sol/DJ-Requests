@@ -542,10 +542,20 @@
       style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
         font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
     />
-    <input id="reg-password" type="password" placeholder="Password (min 6 chars)"
-      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
-        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
-    />
+    <div style="position:relative;width:100%;">
+      <input id="reg-password" type="password" placeholder="Password (min 6 chars)"
+        style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+          font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 48px 12px 16px; outline:none; width:100%;"
+      />
+      <button type="button" onclick="togglePw('reg-password',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#9090b8;padding:0;line-height:1;">👁</button>
+    </div>
+    <div style="position:relative;width:100%;">
+      <input id="reg-confirm" type="password" placeholder="Confirm password"
+        style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+          font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 48px 12px 16px; outline:none; width:100%;"
+      />
+      <button type="button" onclick="togglePw('reg-confirm',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#9090b8;padding:0;line-height:1;">👁</button>
+    </div>
     <input id="reg-invite" type="text" placeholder="Invite code"
       style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
         font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
@@ -585,6 +595,12 @@ function getProfile() {
   return s ? s.profile : null;
 }
 
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') { input.type = 'text'; btn.style.color = '#c084fc'; }
+  else { input.type = 'password'; btn.style.color = '#9090b8'; }
+}
+
 // ── AUTH TAB TOGGLE ──
 function showAuthTab(tab) {
   const isSignin = tab === 'signin';
@@ -621,12 +637,14 @@ async function doRegister() {
   const slug = document.getElementById('reg-slug').value.trim().toLowerCase();
   const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
   const invite_code = document.getElementById('reg-invite').value.trim();
 
-  if (!display_name || !slug || !email || !password || !invite_code) {
+  if (!display_name || !slug || !email || !password || !confirm || !invite_code) {
     errEl.textContent = 'All fields are required.'; return;
   }
   if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; return; }
   if (!/^[a-z0-9_-]+$/.test(slug)) { errEl.textContent = 'Slug can only use lowercase letters, numbers, hyphens, underscores.'; return; }
 
   btn.textContent = 'Creating account…'; btn.disabled = true;
@@ -642,7 +660,7 @@ async function doRegister() {
     // Success — show confirmation message, switch to sign-in
     statusEl.textContent = '✓ ' + data.message;
     statusEl.style.color = '#34d399';
-    ['reg-name','reg-slug','reg-email','reg-password','reg-invite'].forEach(id => {
+    ['reg-name','reg-slug','reg-email','reg-password','reg-confirm','reg-invite'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
     });
     setTimeout(() => showAuthTab('signin'), 2000);
