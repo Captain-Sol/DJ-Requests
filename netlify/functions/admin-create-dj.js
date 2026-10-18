@@ -59,7 +59,7 @@ exports.handler = async (event) => {
       'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
       'Prefer': 'return=representation',
     },
-    body: JSON.stringify({ id: userId, display_name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''), role: 'dj' }),
+    body: JSON.stringify({ id: userId, display_name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''), role: 'dj', must_reset_password: true }),
   });
 
   // Insert default settings row

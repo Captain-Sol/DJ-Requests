@@ -277,6 +277,7 @@ async function loadDJs() {
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="badge ${dj.pending_requests === 0 ? 'zero' : ''}">${dj.pending_requests} pending</span>
         <button class="link-copy" onclick="copyLink('${dj.slug}')">Copy guest link</button>
+        <button class="link-copy" onclick="sendResetEmail('${dj.id}',this)" style="color:var(--warn);">Send reset email</button>
         <button class="btn btn-sm btn-danger" onclick="deleteDJ('${dj.id}','${dj.display_name}',this)" style="font-size:11px;padding:4px 10px;">Delete</button>
       </div>
     </div>
@@ -285,6 +286,24 @@ async function loadDJs() {
 
 function copyLink(slug) {
   navigator.clipboard.writeText(`https://dj-you.netlify.app/?dj=${slug}`).then(() => alert(`Copied: dj-you.netlify.app/?dj=${slug}`));
+}
+
+async function sendResetEmail(userId, btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  const res = await fetch('/.netlify/functions/admin-send-reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  btn.disabled = false;
+  if (res.ok) {
+    btn.textContent = '✓ Sent!';
+    setTimeout(() => { btn.textContent = orig; }, 3000);
+  } else {
+    btn.textContent = 'Failed';
+    setTimeout(() => { btn.textContent = orig; }, 3000);
+  }
 }
 
 // ── REPAIR TOOL ──

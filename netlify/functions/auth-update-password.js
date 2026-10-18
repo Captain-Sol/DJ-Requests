@@ -40,9 +40,17 @@ exports.handler = async (event) => {
     return { statusCode: res.status, headers, body: JSON.stringify({ error: data.message || data.error_description || 'Failed to update password.' }) };
   }
 
-  // Return a usable session so the frontend can auto-login
-  // Supabase PUT /user returns the user object but not a new token —
-  // the recovery token itself is still valid as an access token for this session
+  // Clear the must_reset_password flag now that they've set their own password
+  await fetch(`${SUPABASE_URL}/rest/v1/dj_profiles?id=eq.${data.id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': process.env.SUPABASE_SERVICE_KEY,
+      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+    },
+    body: JSON.stringify({ must_reset_password: false }),
+  }).catch(() => {});
+
   return {
     statusCode: 200,
     headers,

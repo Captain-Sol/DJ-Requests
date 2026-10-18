@@ -757,7 +757,16 @@ async function doLogin() {
       body: JSON.stringify({ email, password: pw }),
     });
     const data = await res.json();
-    if (!res.ok) { errEl.textContent = data.error || 'Login failed.'; btn.textContent = 'Sign in'; btn.disabled = false; return; }
+    if (!res.ok) {
+      btn.textContent = 'Sign in'; btn.disabled = false;
+      if (data.error === 'must_reset_password') {
+        errEl.style.color = '#fbbf24';
+        errEl.textContent = '⚠ Your account requires a password reset. Check your email — we just sent you a link.';
+      } else {
+        errEl.textContent = data.error || 'Login failed.';
+      }
+      return;
+    }
     saveSession(data);
     // Clear any leftover state from a previous account in this browser
     clearAppLocalStorage();

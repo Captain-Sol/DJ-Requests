@@ -34,6 +34,24 @@ exports.handler = async (event) => {
   const profiles = await profileRes.json();
   const profile = profiles[0] || null;
 
+  // If account requires a password reset, send a reset email and block login
+  if (profile && profile.must_reset_password) {
+    // Fire reset email in background (don't await — just kick it off)
+    fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({
+        email: data.user.email,
+        redirect_to: 'https://dj-you.netlify.app/picker.html',
+      }),
+    }).catch(() => {});
+    return {
+      statusCode: 403,
+      headers,
+      body: JSON.stringify({ error: 'must_reset_password', email: data.user.email }),
+    };
+  }
+
   return {
     statusCode: 200,
     headers,
