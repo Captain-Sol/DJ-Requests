@@ -2334,8 +2334,13 @@ function renderSuggestions(suggestions) {
 
 function addSuggestion(idx, song, artist, energy) {
   // Suggestions are already Claude-vetted — add directly to approved pool, no rescan
+  // Note: do NOT check history — suggestions come FROM history, so they'd always bail.
+  // Only block if the song is already sitting in pool, flagged, or denied right now.
   const key = normalizeSongKey(song, artist);
-  if (alreadyInLists(song, artist)) {
+  const alreadyActive = pool.some(r => normalizeSongKey(r.song, r.artist) === key)
+    || flagged.some(r => normalizeSongKey(r.song, r.artist) === key)
+    || denied.some(r => normalizeSongKey(r.song, r.artist) === key);
+  if (alreadyActive) {
     const item = document.getElementById(`sug-${idx}`);
     if (item) { item.classList.add('suggest-adding'); item.querySelector('.suggest-reason').textContent = '✓ Already in pool'; }
     return;
