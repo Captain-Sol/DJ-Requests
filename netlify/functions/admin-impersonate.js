@@ -39,8 +39,20 @@ exports.handler = async (event) => {
   const { user_id } = body;
   if (!user_id) return { statusCode: 400, headers, body: JSON.stringify({ error: 'user_id required' }) };
 
+  // Look up the target user's email (required by generate-link)
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${user_id}`, {
+    headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}` },
+  });
+  if (!userRes.ok) {
+    const err = await userRes.text();
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Could not fetch target user', detail: err }) };
+  }
+  const targetUser = await userRes.json();
+  const targetEmail = targetUser.email;
+  if (!targetEmail) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Target user has no email' }) };
+
   // Generate a magic link for the target user
-  const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${user_id}/generate-link`, {
+  const linkRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -49,6 +61,7 @@ exports.handler = async (event) => {
     },
     body: JSON.stringify({
       type: 'magiclink',
+      email: targetEmail,
       redirect_to: 'https://dj-you.netlify.app/picker.html',
     }),
   });
