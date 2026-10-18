@@ -527,24 +527,36 @@
 
   <!-- Sign up form -->
   <div id="form-signup" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:320px;">
-    <input id="reg-name" type="text" placeholder="DJ display name (e.g. DJ Filtah)"
-      autocomplete="off"
-      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
-        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
-      oninput="autoSlug()"
-    />
+
+    <p style="font-size:12px;color:#9090b8;text-align:center;line-height:1.6;margin:0;">
+      Create your DJ account. Guests will submit song requests through your personal link — you manage everything from here.
+    </p>
+
     <div style="width:100%;">
-      <input id="reg-slug" type="text" placeholder="URL slug (e.g. filtah → /?dj=filtah)"
+      <input id="reg-name" type="text" placeholder="DJ name (e.g. DJ Filtah)"
+        autocomplete="off"
+        style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+          font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
+        oninput="autoSlug()"
+      />
+      <p style="font-size:11px;color:#6060a0;margin:5px 0 0 4px;">This is what guests will see when they open your request page.</p>
+    </div>
+
+    <div style="width:100%;">
+      <input id="reg-slug" type="text" placeholder="Short link name (e.g. filtah)"
         autocomplete="off"
         style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
           font-family:'Space Mono',monospace; font-size:13px; padding:12px 16px; outline:none; width:100%;"
       />
+      <p style="font-size:11px;color:#6060a0;margin:5px 0 0 4px;">This becomes your guest link: <span style="color:#c084fc;">dj-you.netlify.app/?dj=<span id="slug-hint">filtah</span></span></p>
     </div>
+
     <input id="reg-email" type="email" placeholder="Email"
       autocomplete="off"
       style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
         font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
     />
+
     <div style="position:relative;width:100%;">
       <input id="reg-password" type="password" placeholder="Password (min 6 chars)"
         autocomplete="new-password"
@@ -553,6 +565,7 @@
       />
       <button type="button" onclick="togglePw('reg-password',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#9090b8;padding:0;line-height:1;">👁</button>
     </div>
+
     <div style="position:relative;width:100%;">
       <input id="reg-confirm" type="password" placeholder="Confirm password"
         autocomplete="new-password"
@@ -561,12 +574,17 @@
       />
       <button type="button" onclick="togglePw('reg-confirm',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#9090b8;padding:0;line-height:1;">👁</button>
     </div>
-    <input id="reg-invite" type="text" placeholder="Invite code"
-      autocomplete="off"
-      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
-        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
-      onkeydown="if(event.key==='Enter') doRegister()"
-    />
+
+    <div style="width:100%;">
+      <input id="reg-invite" type="text" placeholder="Invite code"
+        autocomplete="off"
+        style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+          font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
+        onkeydown="if(event.key==='Enter') doRegister()"
+      />
+      <p style="font-size:11px;color:#6060a0;margin:5px 0 0 4px;">This app is invite-only. Get the code from whoever invited you.</p>
+    </div>
+
     <button id="reg-btn" onclick="doRegister()" style="
       background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:none;
       border-radius:12px; font-family:'Space Grotesk',sans-serif; font-size:15px;
@@ -627,10 +645,16 @@ function autoSlug() {
   if (!slugEl.dataset.edited) {
     slugEl.value = name.toLowerCase().replace(/^dj\s*/i, '').replace(/[^a-z0-9]+/g, '').trim();
   }
+  const hint = document.getElementById('slug-hint');
+  if (hint) hint.textContent = slugEl.value || 'filtah';
 }
 document.addEventListener('DOMContentLoaded', () => {
   const slugEl = document.getElementById('reg-slug');
-  if (slugEl) slugEl.addEventListener('input', () => { slugEl.dataset.edited = '1'; });
+  if (slugEl) slugEl.addEventListener('input', () => {
+    slugEl.dataset.edited = '1';
+    const hint = document.getElementById('slug-hint');
+    if (hint) hint.textContent = slugEl.value || 'filtah';
+  });
 });
 
 async function doRegister() {

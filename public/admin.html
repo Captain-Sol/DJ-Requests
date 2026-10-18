@@ -48,7 +48,9 @@
   .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px;
     font-size: 12px; padding: 6px 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-  #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  #access-gate { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 80vh; gap: 14px; }
+  #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center;
     min-height: 80vh; gap: 14px; }
   #app { display: none; }
   .link-copy { font-size: 12px; color: var(--accent-hi); cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; font-family: inherit; }
@@ -56,6 +58,16 @@
 </head>
 <body>
 <div class="container">
+
+<!-- ACCESS GATE -->
+<div id="access-gate">
+  <div class="mono" style="font-size:11px;letter-spacing:0.18em;color:var(--accent-hi);text-transform:uppercase;">DJ Requests</div>
+  <div style="font-size:22px;font-weight:700;">Admin Area</div>
+  <div style="font-size:13px;color:var(--muted);text-align:center;max-width:280px;">This area is restricted. Enter the admin access code to continue.</div>
+  <input id="access-code" type="password" placeholder="Access code" style="max-width:320px;" onkeydown="if(event.key==='Enter')verifyAccess()" />
+  <button class="btn" onclick="verifyAccess()" id="access-btn" style="max-width:320px;width:100%;">Continue</button>
+  <div id="access-err" class="err"></div>
+</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
@@ -117,6 +129,39 @@ function saveSession(s) { localStorage.setItem(AUTH_KEY, JSON.stringify(s)); }
 function clearSession() { localStorage.removeItem(AUTH_KEY); }
 function getToken() { const s = getSession(); return s ? s.access_token : null; }
 
+// ── ACCESS GATE ──
+async function verifyAccess() {
+  const code = document.getElementById('access-code').value.trim();
+  const errEl = document.getElementById('access-err');
+  const btn = document.getElementById('access-btn');
+  errEl.textContent = '';
+  if (!code) { errEl.textContent = 'Enter the access code.'; return; }
+  btn.textContent = 'Checking…'; btn.disabled = true;
+  const res = await fetch('/.netlify/functions/admin-verify-access', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  const data = await res.json();
+  btn.textContent = 'Continue'; btn.disabled = false;
+  if (!res.ok) { errEl.textContent = data.error || 'Wrong code.'; return; }
+  sessionStorage.setItem('djapp_admin_access', '1');
+  document.getElementById('access-gate').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// On load: skip gate if already verified this tab, skip login if session exists
+(function() {
+  if (sessionStorage.getItem('djapp_admin_access')) {
+    document.getElementById('access-gate').style.display = 'none';
+    const session = getSession();
+    if (session && session.access_token && session.profile?.role === 'admin') {
+      showApp(session);
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+    }
+  }
+})();
+
 async function adminLogin() {
   const email = document.getElementById('a-email').value.trim();
   const pw = document.getElementById('a-pw').value;
@@ -148,6 +193,25 @@ function adminLogout() {
   clearSession();
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
+}
+
+async function deleteDJ(userId, name, btn) {
+  if (!confirm(`Delete "${name}"? This removes their account and all their data. Cannot be undone.`)) return;
+  btn.textContent = 'Deleting…'; btn.disabled = true;
+  const res = await fetch('/.netlify/functions/admin-delete-dj', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+    body: JSON.stringify({ user_id: userId }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    btn.textContent = 'Delete'; btn.disabled = false;
+    alert(data.error || 'Delete failed.');
+    return;
+  }
+  // Remove card from DOM
+  const card = document.getElementById('dj-card-' + userId);
+  if (card) card.remove();
 }
 
 // Slug preview
@@ -195,7 +259,7 @@ async function loadDJs() {
   const djs = data.djs || [];
   if (!djs.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">No DJs yet.</div>'; return; }
   listEl.innerHTML = djs.map(dj => `
-    <div class="dj-card" style="margin-bottom:8px;">
+    <div class="dj-card" style="margin-bottom:8px;" id="dj-card-${dj.id}">
       <div>
         <div class="dj-name">${dj.display_name} <span style="font-size:11px;background:#1e1b4b;color:var(--accent-hi);border-radius:4px;padding:1px 6px;">${dj.role}</span></div>
         <div class="dj-slug">/${dj.slug} · created ${new Date(dj.created_at).toLocaleDateString()}</div>
@@ -203,6 +267,7 @@ async function loadDJs() {
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="badge ${dj.pending_requests === 0 ? 'zero' : ''}">${dj.pending_requests} pending</span>
         <button class="link-copy" onclick="copyLink('${dj.slug}')">Copy guest link</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteDJ('${dj.id}','${dj.display_name}',this)" style="font-size:11px;padding:4px 10px;">Delete</button>
       </div>
     </div>
   `).join('');
@@ -212,13 +277,7 @@ function copyLink(slug) {
   navigator.clipboard.writeText(`https://dj-you.netlify.app/?dj=${slug}`).then(() => alert(`Copied: dj-you.netlify.app/?dj=${slug}`));
 }
 
-// Auto-login if session exists
-(function() {
-  const session = getSession();
-  if (session && session.access_token && session.profile?.role === 'admin') {
-    showApp(session);
-  }
-})();
+// (auto-login handled in the access gate block above)
 </script>
 </body>
 </html>
