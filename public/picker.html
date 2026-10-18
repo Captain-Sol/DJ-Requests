@@ -523,6 +523,10 @@
       border-radius:12px; font-family:'Space Grotesk',sans-serif; font-size:15px;
       font-weight:600; padding:12px 32px; cursor:pointer; width:100%;
     ">Sign in</button>
+    <button type="button" onclick="doForgotPassword()" style="
+      background:none;border:none;color:#6060a0;font-size:12px;
+      font-family:'Space Grotesk',sans-serif;cursor:pointer;padding:0;text-decoration:underline;
+    ">Forgot password?</button>
   </div>
 
   <!-- Sign up form -->
@@ -784,6 +788,29 @@ function clearAppLocalStorage() {
       localStorage.removeItem('djRequestPicker.v7.' + name);
     } catch(e) {}
   });
+}
+
+async function doForgotPassword() {
+  const errEl = document.getElementById('login-error');
+  const statusEl = document.getElementById('login-status');
+  errEl.textContent = '';
+  // Use whatever is in the email field, or prompt
+  const email = document.getElementById('login-email').value.trim()
+    || prompt('Enter your email address:');
+  if (!email) return;
+  statusEl.textContent = 'Sending reset link…';
+  try {
+    const res = await fetch('/.netlify/functions/auth-reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    statusEl.textContent = data.message || 'Reset link sent — check your email.';
+  } catch(e) {
+    statusEl.textContent = '';
+    errEl.textContent = 'Connection error — try again.';
+  }
 }
 
 async function doLogout() {
