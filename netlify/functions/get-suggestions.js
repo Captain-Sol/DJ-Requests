@@ -33,23 +33,29 @@ ${playlistTracks.slice(0, 60).join('\n')}
 IMPORTANT: The DJ specifically loaded this playlist to set the vibe. At least 4 of your 5 suggestions should be songs directly from this list or artists heavily represented in it. Do not suggest generic crowd-pleasers that ignore this playlist.`
     : '';
 
-  const prompt = `You are a professional DJ assistant. Based on the songs recently played and the event vibe, suggest 5 great next songs to play.
+  const vibeDirective = vibeContext
+    ? `CURRENT VIBE DIRECTIVE (THIS IS THE PRIMARY INSTRUCTION — override history if needed):
+${vibeContext}
+The DJ has explicitly set this vibe. Your suggestions MUST match this directive even if recent play history points a different direction.`
+    : `EVENT VIBE: General dance event.`;
+
+  const prompt = `You are a professional DJ assistant. Suggest 5 great next songs to play.
 
 ${playlistSection}
 
-EVENT VIBE:
-${vibeContext || 'General dance event.'}
+${vibeDirective}
 
 CONTENT FILTER: ${filterNote}
 
-RECENTLY PLAYED (most recent last):
+RECENTLY PLAYED (most recent last — use for energy flow context, but do NOT let it override the vibe directive above):
 ${recentHistory || 'Nothing played yet — suggest crowd-warming openers.'}
 
 ALREADY IN QUEUE (don't repeat these):
 ${poolSongs || 'None yet.'}
 
 Rules:
-- If a reference playlist is provided above, treat it as the top priority — pull suggestions from it first
+- The VIBE DIRECTIVE above is the top priority — if it conflicts with play history, follow the vibe
+- If a reference playlist is provided, treat it as second priority after vibe
 - Match and build the energy flow naturally (don't drop from high to slow without a mid transition)
 - Vary artists — don't suggest the same artist twice in the list
 - Don't repeat songs already played or in queue
