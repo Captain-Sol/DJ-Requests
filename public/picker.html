@@ -119,7 +119,6 @@
   .glow-green  { filter: drop-shadow(0 0 6px rgba(52,211,153,0.8)); }
   .glow-amber  { filter: drop-shadow(0 0 6px rgba(251,191,36,0.8)); }
   .menu-btn {
-    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
     background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
     padding: 6px 9px; font-size: 16px; color: var(--muted); line-height: 1;
     transition: background 0.1s, border-color 0.1s, color 0.1s;
@@ -1087,12 +1086,12 @@ function copyGuestLink() {
     </div>
 
     <!-- Session bar -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-      <span id="dj-display-name" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-right:auto;"></span>
-      <button id="guest-link-btn" onclick="copyGuestLink()" style="display:none;font-size:11px;background:rgba(109,40,217,0.2);border:1px solid var(--accent);color:var(--accent-hi);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;white-space:nowrap;">🔗 Guest link</button>
-      <a id="admin-link" href="/admin.html" style="display:none;font-size:11px;color:var(--accent-hi);text-decoration:none;background:rgba(109,40,217,0.2);border:1px solid var(--accent);border-radius:6px;padding:4px 10px;font-weight:600;white-space:nowrap;">Admin</a>
-      <button id="logout-btn" onclick="doLogout()" style="display:none;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;">Sign out</button>
-      <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" title="Settings">&#9776;</button>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+      <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" title="Settings" style="flex-shrink:0;">&#9776;</button>
+      <span id="dj-display-name" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button id="guest-link-btn" onclick="copyGuestLink()" style="display:none;font-size:11px;background:rgba(109,40,217,0.2);border:1px solid var(--accent);color:var(--accent-hi);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;white-space:nowrap;flex-shrink:0;">🔗 Guest link</button>
+      <a id="admin-link" href="/admin.html" style="display:none;font-size:11px;color:var(--accent-hi);text-decoration:none;background:rgba(109,40,217,0.2);border:1px solid var(--accent);border-radius:6px;padding:4px 10px;font-weight:600;white-space:nowrap;flex-shrink:0;">Admin</a>
+      <button id="logout-btn" onclick="doLogout()" style="display:none;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;flex-shrink:0;">↪ Out</button>
     </div>
 
     <div class="top-bar">
