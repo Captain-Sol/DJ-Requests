@@ -17,12 +17,18 @@ exports.handler = async (event) => {
   const callerToken = authHeader.replace('Bearer ', '').trim();
   if (!callerToken) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Not authenticated' }) };
 
-  // Verify admin
-  const meRes = await fetch(`${SUPABASE_URL}/rest/v1/dj_profiles?select=role`, {
-    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${callerToken}` },
+  // Resolve caller identity then verify admin role
+  const meRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${callerToken}` },
   });
-  const meData = await meRes.json();
-  if (!meRes.ok || !meData[0] || meData[0].role !== 'admin') {
+  if (!meRes.ok) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid token' }) };
+  const me = await meRes.json();
+
+  const profileCheck = await fetch(`${SUPABASE_URL}/rest/v1/dj_profiles?id=eq.${me.id}&select=role`, {
+    headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}` },
+  });
+  const meData = await profileCheck.json();
+  if (!meData[0] || meData[0].role !== 'admin') {
     return { statusCode: 403, headers, body: JSON.stringify({ error: 'Admin access required' }) };
   }
 
