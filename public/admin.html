@@ -159,16 +159,16 @@ async function verifyAccess() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// On load: skip gate if already verified this tab, skip login if session exists
+// On load: if a valid admin session exists in localStorage, skip everything and go straight in.
+// Otherwise fall back to sessionStorage gate check (access code → login screen).
 (function() {
-  if (sessionStorage.getItem('djapp_admin_access')) {
+  const session = getSession();
+  if (session && session.access_token && session.profile?.role === 'admin') {
+    sessionStorage.setItem('djapp_admin_access', '1');
+    showApp(session);
+  } else if (sessionStorage.getItem('djapp_admin_access')) {
     document.getElementById('access-gate').style.display = 'none';
-    const session = getSession();
-    if (session && session.access_token && session.profile?.role === 'admin') {
-      showApp(session);
-    } else {
-      document.getElementById('login-screen').style.display = 'flex';
-    }
+    document.getElementById('login-screen').style.display = 'flex';
   }
 })();
 
