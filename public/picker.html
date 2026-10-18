@@ -941,9 +941,6 @@
   <div class="card" id="api-keys-card" style="display:none;">
     <div class="section-title">Settings</div>
 
-    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-      <button onclick="clearScanMemory()">Clear Scan Memory</button>
-    </div>
     <div class="hint" id="storage-hint">Content scanning runs server-side via Claude — no API key needed here.</div>
 
     <div class="divider" style="margin:16px 0 12px;"></div>
@@ -1516,7 +1513,7 @@ function clearScanMemory() {
   storageRemove(STORAGE_KEYS.pool); storageRemove(STORAGE_KEYS.flagged);
   storageRemove(STORAGE_KEYS.history); storageRemove(STORAGE_KEYS.denied);
   storageRemove(STORAGE_KEYS.scanCache);
-  document.getElementById('pick-display').innerHTML = '<span class="pick-empty">Scan memory cleared.</span>';
+  document.getElementById('pick-display').innerHTML = '<span class="pick-empty">All memory cleared.</span>';
   document.getElementById('undo-btn').disabled = true;
   renderPool(); renderFlagged(); renderDenied(); renderHistory(); updateStorageHint(); updatePickStats();
 }
@@ -2401,8 +2398,8 @@ function clickLightSwitch() {
   // Activate shimmer
   wrap.classList.add('ls-active', 'ls-shimmer');
 
-  // Do the actual cache clear
-  handleClearCache();
+  // Clear everything — cache + full memory
+  clearScanMemory();
 
   // Spring back after 700ms
   setTimeout(() => {
