@@ -59,5 +59,27 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: `Failed to save request: ${err}` }) };
   }
 
+  // Fetch the new row id so auto-scan can mark it processed
+  const newRowRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/dj_requests?dj_id=eq.${djId}&song=eq.${encodeURIComponent(String(title).trim())}&status=eq.pending&order=submitted_at.desc&limit=1&select=id`,
+    { headers: svcH }
+  );
+  const newRows = await newRowRes.json().catch(() => []);
+  const requestId = newRows[0]?.id || null;
+
+  // Kick off auto-scan in the background — don't await so guest gets instant response
+  const baseUrl = process.env.URL || 'https://dj-you.netlify.app';
+  fetch(`${baseUrl}/.netlify/functions/auto-scan-request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      dj_id: djId,
+      request_id: requestId,
+      song: String(title).trim(),
+      artist: String(artist).trim(),
+      spotify_url: String(spotifyUrl || '').trim(),
+    }),
+  }).catch(() => {}); // fire-and-forget
+
   return { statusCode: 200, headers, body: JSON.stringify({ ok: true, djName: djs[0].display_name }) };
 };
