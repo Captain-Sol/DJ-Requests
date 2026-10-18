@@ -563,21 +563,26 @@ async function doLogin() {
     if (!res.ok) { errEl.textContent = data.error || 'Login failed.'; btn.textContent = 'Sign in'; btn.disabled = false; return; }
     saveSession(data);
     document.getElementById('login-gate').style.display = 'none';
-    statusEl.textContent = 'Loading your data…';
-    await loadStateFromSupabase();
-    // Show admin link if admin
+    // Show header UI immediately (before state load, so a load error doesn't leave them invisible)
     if (data.profile && data.profile.role === 'admin') {
       const adminLink = document.getElementById('admin-link');
       if (adminLink) adminLink.style.display = 'inline-flex';
     }
-    // Update header with DJ name
     const nameEl = document.getElementById('dj-display-name');
     if (nameEl && data.profile) nameEl.textContent = data.profile.display_name || data.user.email;
-    // Show logout + guest link buttons
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.style.display = 'inline-flex';
     const guestBtn = document.getElementById('guest-link-btn');
     if (guestBtn && data.profile?.slug) guestBtn.style.display = 'inline-flex';
+    // Now load state (errors here won't blank the header)
+    statusEl.textContent = 'Loading your data…';
+    try {
+      await loadStateFromSupabase();
+    } catch(e) {
+      console.error('State load failed:', e);
+      statusEl.textContent = 'Could not load saved data — starting fresh.';
+    }
+    btn.textContent = 'Sign in'; btn.disabled = false;
   } catch(e) {
     errEl.textContent = 'Connection error — try again.';
     btn.textContent = 'Sign in'; btn.disabled = false;
