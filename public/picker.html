@@ -1089,6 +1089,9 @@
       ">✕</button>
     </div>
     <div class="hint" id="playlist-hint" style="margin-top:5px;">Shapes AI suggestions — doesn't affect content filtering.</div>
+    <div id="nofilter-vibe-warn" style="display:none; margin-top:8px; padding:8px 12px; background:#3b1515; border:1px solid #7f1d1d; border-radius:8px; font-size:12px; color:#fca5a5; line-height:1.4;">
+      ⚠️ <strong>No Filter mode is active.</strong> Explicit and offensive songs may be approved automatically. Make sure this is the right setting for your crowd.
+    </div>
   </div>
 
   <!-- LOAD REQUESTS -->
@@ -1341,6 +1344,9 @@ function setFilterMode(mode) {
   document.getElementById('mode-desc').innerHTML = MODE_CONFIG[mode].desc;
   const persistOn = document.getElementById('persist-mode-toggle').checked;
   if (persistOn) storageSet(STORAGE_KEYS.filterMode, mode);
+  // Show warning banner when no-filter is active
+  const warn = document.getElementById('nofilter-vibe-warn');
+  if (warn) warn.style.display = mode === 'nofilter' ? 'block' : 'none';
 }
 
 function savePersistToggle() {
@@ -1956,6 +1962,21 @@ function addCachedResult(song, artist, cached) {
 }
 
 // ── BUILD VIBE CONTEXT ──
+// Strip slurs/profanity from vibe text before sending to Claude API.
+// The DJ can type anything — this keeps the API call clean so it doesn't refuse.
+function sanitizeVibeForApi(text) {
+  if (!text) return text;
+  // Replace common slurs with genre/energy descriptors the API can work with
+  return text
+    .replace(/\bn[i*!1]+g+[a*!]+[sz]?\b/gi, 'trap/hip-hop')
+    .replace(/\bf[*u]+ck\w*/gi, 'intense')
+    .replace(/\bs[*h]+it\b/gi, 'hard-hitting')
+    .replace(/\bb[*i]+tch\w*/gi, 'aggressive')
+    .replace(/\bc[*u]+nt\b/gi, 'raw')
+    .replace(/\ba[*s]+\b/gi, '')
+    .trim();
+}
+
 function buildVibeContext() {
   const eventType = document.getElementById('event-type').value;
   const customEventType = document.getElementById('event-type-custom').value.trim();
@@ -1967,7 +1988,7 @@ function buildVibeContext() {
   if (playlistTracks.length > 0) {
     context += `\n\nReference playlist tracks (use as vibe benchmark — songs similar in energy/genre to these are high viability):\n${playlistTracks.slice(0, 40).join(', ')}`;
   }
-  if (vibePrompt) context += `\n\nAdditional context from the DJ: ${vibePrompt}`;
+  if (vibePrompt) context += `\n\nAdditional context from the DJ: ${sanitizeVibeForApi(vibePrompt)}`;
   return context;
 }
 
