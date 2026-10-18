@@ -262,6 +262,32 @@
   }
   #song-list, #flagged-list, #denied-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
 
+  /* ── Guest Requests panel ── */
+  .guest-req-card { border-color: rgba(109,40,217,0.5); }
+  .guest-req-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .guest-req-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:22px; height:22px; border-radius:999px; padding:0 6px;
+    background: var(--accent); color:#fff; font-size:12px; font-weight:700;
+    flex-shrink:0;
+  }
+  .guest-req-badge.empty { background: rgba(144,144,184,0.2); color: var(--muted); }
+  .guest-req-pulse { width:8px; height:8px; border-radius:50%; background:var(--success); flex-shrink:0;
+    animation: pulse-dot 2s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.7);} }
+  .req-row {
+    display:flex; align-items:center; gap:8px; padding:8px 10px;
+    border-radius:8px; background:var(--surface2); font-size:13px;
+    border:1px solid var(--border);
+  }
+  .req-row .req-name { font-weight:600; flex:1; min-width:80px; }
+  .req-row .req-artist { color:var(--muted); font-size:12px; min-width:60px; }
+  .req-row .req-requester { font-size:11px; color:var(--accent-hi); margin-left:auto; white-space:nowrap; }
+  #guest-req-list { display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; }
+  .req-empty { font-size:13px; color:var(--muted); padding:6px 0; }
+  .guest-req-footer { font-size:11px; color:var(--muted); margin-top:8px; display:flex; align-items:center; gap:6px; }
+  .req-row.req-processing { opacity:0.5; pointer-events:none; }
+
   /* ── Pick display ── */
   .pick-display {
     background: var(--surface2); border-radius: 10px; padding: 1.75rem 1.25rem;
@@ -789,6 +815,7 @@ async function doLogin() {
       console.error('State load failed:', e);
       statusEl.textContent = 'Could not load saved data — starting fresh.';
     }
+    startGuestRequestPolling();
     btn.textContent = 'Sign in'; btn.disabled = false;
   } catch(e) {
     errEl.textContent = 'Connection error — try again.';
@@ -856,6 +883,7 @@ async function doForgotPassword() {
 }
 
 async function doLogout() {
+  stopGuestRequestPolling();
   clearSession();
   clearAppLocalStorage();
   // Clear in-memory state
@@ -906,6 +934,7 @@ function copyGuestLink() {
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
       const guestBtn = document.getElementById('guest-link-btn');
       if (guestBtn && session.profile?.slug) guestBtn.style.display = 'inline-flex';
+      startGuestRequestPolling();
     } catch(e) {
       clearSession();
     }
@@ -1379,32 +1408,9 @@ function copyGuestLink() {
 
     <div class="divider" style="margin:16px 0 12px;"></div>
 
-    <!-- Google Sheet loader (hidden here in settings) -->
-    <div class="section-title" style="margin-bottom:8px;">Load from Google Sheet</div>
-    <!-- sheet-url hidden — loaded from server config -->
+    <!-- sheet-url kept as hidden for legacy storage compat -->
     <input type="hidden" id="sheet-url" />
-    <div class="row">
-      <input type="text" id="sheet-col-song" value="Song Title" placeholder="Song column" />
-      <input type="text" id="sheet-col-artist" value="Artist" placeholder="Artist column" />
-      <button onclick="loadSheet()">&#8635; Fetch + Check</button>
-    </div>
-    <div class="autofetch-row">
-      <div class="autofetch-dot" id="autofetch-dot"></div>
-      <span class="toggle-label autofetch-label" id="autofetch-label">Auto-fetch: use the disk on the left</span>
-    </div>
     <div id="sheet-status"></div>
-
-    <div class="divider" style="margin:16px 0 12px;"></div>
-
-    <!-- Paste from sheet -->
-    <div class="section-title" style="margin-bottom:8px;">Paste from Sheet</div>
-    <textarea class="mono" id="paste-box" placeholder="Song Title	Artist&#10;Levitating	Dua Lipa&#10;WAP	Cardi B"></textarea>
-    <div class="hint">Select all in Google Sheets (Ctrl+A / Cmd+A), copy, paste here. Include the header row.</div>
-    <div class="row" style="margin-top:8px;">
-      <input type="text" id="paste-col-song" value="Song Title" placeholder="Song column" />
-      <input type="text" id="paste-col-artist" value="Artist" placeholder="Artist column" />
-      <button onclick="loadPaste()">Load + Check</button>
-    </div>
   </div>
 
   <!-- FILTER MODE — slider -->
@@ -1507,6 +1513,21 @@ function copyGuestLink() {
       <div id="bulk-progress" style="font-size:12px;color:var(--muted);margin-top:6px;display:none;"></div>
     </div>
 
+  </div>
+
+  <!-- GUEST REQUESTS (live polling from Supabase) -->
+  <div class="card guest-req-card" id="guest-requests-card" style="display:none;">
+    <div class="guest-req-header">
+      <div class="guest-req-pulse" id="guest-req-pulse"></div>
+      <div class="section-title" style="margin-bottom:0;">Guest Requests</div>
+      <span class="guest-req-badge empty" id="guest-req-count">0</span>
+      <button onclick="pollGuestRequests()" style="margin-left:auto;font-size:11px;padding:3px 8px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;">↻ Refresh</button>
+    </div>
+    <div id="guest-req-list"><span class="req-empty">No pending requests.</span></div>
+    <div class="guest-req-footer">
+      <span id="guest-req-last-check">Checking every 10 s</span>
+      <span style="margin-left:auto;">Approved requests go through Claude content scan automatically.</span>
+    </div>
   </div>
 
   <!-- APPROVED POOL -->
@@ -1911,6 +1932,97 @@ async function saveStateToSupabase() {
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ pool, history, flagged, denied, settings }),
   }).catch(() => {}); // best-effort
+}
+
+// ── GUEST REQUESTS (live polling) ──
+let _guestReqTimer = null;
+
+function startGuestRequestPolling() {
+  const card = document.getElementById('guest-requests-card');
+  if (card) card.style.display = '';
+  pollGuestRequests();
+  _guestReqTimer = setInterval(pollGuestRequests, 10000);
+}
+
+function stopGuestRequestPolling() {
+  if (_guestReqTimer) { clearInterval(_guestReqTimer); _guestReqTimer = null; }
+  const card = document.getElementById('guest-requests-card');
+  if (card) card.style.display = 'none';
+}
+
+async function pollGuestRequests() {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const res = await fetch('/.netlify/functions/dj-requests-poll', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    renderGuestRequests(data.requests || []);
+    const lastCheck = document.getElementById('guest-req-last-check');
+    if (lastCheck) {
+      const t = new Date();
+      lastCheck.textContent = `Last checked ${t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})} · refreshes every 10 s`;
+    }
+  } catch(e) { /* ignore network hiccups */ }
+}
+
+function renderGuestRequests(requests) {
+  const list = document.getElementById('guest-req-list');
+  const badge = document.getElementById('guest-req-count');
+  if (!list || !badge) return;
+  badge.textContent = requests.length;
+  badge.className = 'guest-req-badge' + (requests.length ? '' : ' empty');
+  if (!requests.length) {
+    list.innerHTML = '<span class="req-empty">No pending requests.</span>';
+    return;
+  }
+  list.innerHTML = requests.map(r => {
+    const song = escapeHtml(r.song_title || r.song || '?');
+    const artist = escapeHtml(r.artist || '');
+    const who = escapeHtml(r.requester_name || r.guest_name || '');
+    const id = escapeHtml(r.id);
+    return `<div class="req-row" id="req-${id}">
+      <span class="req-name">${song}</span>
+      ${artist ? `<span class="req-artist">${artist}</span>` : ''}
+      ${who ? `<span class="req-requester">from ${who}</span>` : ''}
+      <button class="sm approve" onclick="approveGuestReq('${id}','${song.replace(/'/g,"\\'")}','${artist.replace(/'/g,"\\'")}',this)" title="Approve — send to Claude scan">✓</button>
+      <button class="sm deny-btn" onclick="denyGuestReq('${id}',this)" title="Deny">✕</button>
+    </div>`;
+  }).join('');
+}
+
+async function approveGuestReq(id, song, artist, btn) {
+  const row = document.getElementById('req-' + id);
+  if (row) row.classList.add('req-processing');
+  const token = getToken();
+  // Mark approved in Supabase
+  await fetch('/.netlify/functions/dj-requests-poll', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status: 'approved' }),
+  }).catch(() => {});
+  // Feed directly into the scan pipeline (same path as manual Add + Check)
+  if (song) {
+    document.getElementById('song-input').value = song;
+    document.getElementById('artist-input').value = artist || '';
+    await addManual();
+  }
+  // Refresh the list
+  pollGuestRequests();
+}
+
+async function denyGuestReq(id, btn) {
+  const row = document.getElementById('req-' + id);
+  if (row) row.classList.add('req-processing');
+  const token = getToken();
+  await fetch('/.netlify/functions/dj-requests-poll', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status: 'denied' }),
+  }).catch(() => {});
+  pollGuestRequests();
 }
 
 function saveAppState() {

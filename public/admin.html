@@ -277,6 +277,7 @@ async function loadDJs() {
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="badge ${dj.pending_requests === 0 ? 'zero' : ''}">${dj.pending_requests} pending</span>
         <button class="link-copy" onclick="copyLink('${dj.slug}')">Copy guest link</button>
+        <button class="link-copy" onclick="impersonateDJ('${dj.id}','${dj.display_name}',this)" style="color:var(--accent-hi);">🎭 Log in as</button>
         <button class="link-copy" onclick="sendResetEmail('${dj.id}',this)" style="color:var(--warn);">Send reset email</button>
         <button class="btn btn-sm btn-danger" onclick="deleteDJ('${dj.id}','${dj.display_name}',this)" style="font-size:11px;padding:4px 10px;">Delete</button>
       </div>
@@ -304,6 +305,28 @@ async function sendResetEmail(userId, btn) {
     btn.textContent = 'Failed';
     setTimeout(() => { btn.textContent = orig; }, 3000);
   }
+}
+
+async function impersonateDJ(userId, displayName, btn) {
+  if (!confirm(`Open picker.html as "${displayName}"?\n\nThis opens a new tab logged in as that DJ. Your admin session stays open here.`)) return;
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Opening…'; btn.disabled = true;
+  try {
+    const res = await fetch('/.netlify/functions/admin-impersonate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ user_id: userId }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.url) {
+      alert('Failed to generate login link: ' + (data.error || 'Unknown error'));
+    } else {
+      window.open(data.url, '_blank');
+    }
+  } catch(e) {
+    alert('Network error — try again.');
+  }
+  btn.textContent = orig; btn.disabled = false;
 }
 
 // ── REPAIR TOOL ──
