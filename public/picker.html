@@ -2159,6 +2159,7 @@ function renderPool() {
       ${energyBadgeHtml(r.energy)}
       <span class="badge ${r.hadLyrics ? 'badge-lyrics' : 'badge-ok'}">${r.hadLyrics ? 'lyrics read' : 'knowledge only'}</span>
       <span class="song-ts">${formatTs(r.addedAt)}</span>
+      <a class="sm" href="${r.spotifyUrl || `https://open.spotify.com/search/${encodeURIComponent((r.song||'') + ' ' + (r.artist !== '—' ? r.artist : ''))}`}" target="_blank" rel="noopener" title="Open on Spotify" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#1db954;">&#9654;</a>
       <button class="sm deny-btn" onclick="denyFromPool(${i})" title="Deny this song">&#128683;</button>
       <button class="sm remove" onclick="removeFromPool(${i})" title="Remove">&#x2715;</button>
       <div class="review-meta"><strong>Reputation:</strong> ${overview} <strong>Confidence:</strong> ${confidence}${vibe}<br><span class="discrepancy"><strong>Possible discrepancies:</strong> ${discrepancies}</span></div>
