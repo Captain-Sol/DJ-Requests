@@ -708,6 +708,7 @@ async function doLogin() {
     }
     const nameEl = document.getElementById('dj-display-name');
     if (nameEl && data.profile) nameEl.textContent = data.profile.display_name || data.user.email;
+    applyDJName(data.profile);
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.style.display = 'inline-flex';
     const guestBtn = document.getElementById('guest-link-btn');
@@ -725,6 +726,19 @@ async function doLogin() {
     errEl.textContent = 'Connection error — try again.';
     btn.textContent = 'Sign in'; btn.disabled = false;
   }
+}
+
+function applyDJName(profile) {
+  if (!profile) return;
+  const name = profile.display_name || '';
+  // Big banner title
+  const titleEl = document.getElementById('main-dj-title');
+  if (titleEl) titleEl.textContent = name;
+  // Requests section header
+  const reqEl = document.getElementById('requests-section-title');
+  if (reqEl) reqEl.textContent = 'Song Requests for ' + name;
+  // Page title
+  document.title = name ? name + ' — DJ Tool' : 'DJ Tool';
 }
 
 function clearAppLocalStorage() {
@@ -784,6 +798,7 @@ function copyGuestLink() {
       }
       const nameEl = document.getElementById('dj-display-name');
       if (nameEl && session.profile) nameEl.textContent = session.profile.display_name || session.user?.email || '';
+      applyDJName(session.profile);
       const logoutBtn = document.getElementById('logout-btn');
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
       const guestBtn = document.getElementById('guest-link-btn');
@@ -1248,7 +1263,7 @@ function copyGuestLink() {
     </div>
 
     <div class="top-bar">
-      <div class="filtah-title"><span class="dj-part">DJ</span> FILTAH</div>
+      <div class="filtah-title" id="main-dj-title">DJ FILTAH</div>
     </div>
     <p class="filtah-subtitle-line">load &bull; scan &bull; drop the banger</p>
   </div>
@@ -1365,7 +1380,7 @@ function copyGuestLink() {
 
   <!-- LOAD REQUESTS -->
   <div class="card">
-    <div class="section-title">Song Requests for DJ Filtah</div>
+    <div class="section-title" id="requests-section-title">Song Requests for DJ Filtah</div>
     <div class="row">
       <input type="text" id="song-input" placeholder="Song title" />
       <input type="text" id="artist-input" placeholder="Artist (Enter to add)" />
