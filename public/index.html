@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Song Requests for DJ Filtah</title>
+  <title>Song Requests</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -432,7 +432,7 @@
   <div class="shell">
     <header>
       <p class="header-label">Request a song</p>
-      <h1>Song Requests for <span>DJ Filtah</span></h1>
+      <h1>Song Requests for <span id="dj-name-display">DJ Filtah</span></h1>
       <!-- 32-bit crowd dancers -->
       <div class="crowd-strip">
         <span class="crowd-figure dance-b" style="animation-delay:0s;">
@@ -689,6 +689,7 @@
       submitBtn.innerHTML = '<span class="spinner"></span>Sending…';
 
       try {
+        const djSlug = new URLSearchParams(window.location.search).get('dj') || 'filtah';
         const res = await fetch('/.netlify/functions/submit-request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -696,7 +697,8 @@
             title:      selectedTrack.name,
             artist:     selectedTrack.artists,
             spotifyId:  selectedTrack.id,
-            spotifyUrl: selectedTrack.url
+            spotifyUrl: selectedTrack.url,
+            djSlug,
           })
         });
 
@@ -759,5 +761,24 @@
       return `${m}:${s}`;
     }
   </script>
+<script>
+// Set DJ name from ?dj= URL param
+(function() {
+  const slug = new URLSearchParams(window.location.search).get('dj');
+  if (slug) {
+    // Fetch DJ display name from Supabase via a lightweight lookup
+    fetch('/.netlify/functions/dj-lookup?slug=' + encodeURIComponent(slug))
+      .then(r => r.json())
+      .then(d => {
+        if (d.display_name) {
+          const el = document.getElementById('dj-name-display');
+          if (el) el.textContent = d.display_name;
+          document.title = 'Song Requests for ' + d.display_name;
+        }
+      })
+      .catch(() => {});
+  }
+})();
+</script>
 </body>
 </html>

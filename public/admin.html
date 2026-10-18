@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DJ Requests — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0d1a; --surface: #1a1a2e; --surface2: #12122a;
+    --border: #2d2d50; --accent: #6d28d9; --accent-hi: #c084fc;
+    --text: #f0f0ff; --muted: #9090b8; --success: #34d399;
+    --danger: #f87171; --warn: #fbbf24; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Space Grotesk', sans-serif; background: var(--bg);
+    background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(109,40,217,0.3) 0%, transparent 70%);
+    color: var(--text); min-height: 100vh; padding: 2rem 1rem; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 700; color: #fff; }
+  h1 span { color: var(--accent-hi); }
+  .mono { font-family: 'Space Mono', monospace; }
+  .muted { color: var(--muted); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .section-title { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-hi); margin-bottom: 14px; }
+  input, select { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 8px; color: var(--text);
+    font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 10px 12px; outline: none; width: 100%; }
+  input:focus, select:focus { border-color: var(--accent); }
+  .btn { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border: none; border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; padding: 10px 20px; cursor: pointer; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-sm { font-size: 12px; padding: 6px 14px; border-radius: 8px; }
+  .btn-danger { background: #7f1d1d; border: 1px solid #f87171; color: #fca5a5; }
+  .row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dj-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .dj-name { font-weight: 600; font-size: 15px; }
+  .dj-slug { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .badge { display: inline-flex; align-items: center; justify-content: center;
+    background: #312e81; color: var(--accent-hi); border-radius: 999px;
+    font-size: 11px; font-weight: 700; padding: 2px 10px; font-family: 'Space Mono', monospace; }
+  .badge.zero { background: var(--surface); color: var(--muted); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 8px; }
+  .ok { color: var(--success); font-size: 13px; margin-top: 8px; }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px;
+    font-size: 12px; padding: 6px 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+  #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 80vh; gap: 14px; }
+  #app { display: none; }
+  .link-copy { font-size: 12px; color: var(--accent-hi); cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="mono" style="font-size:11px;letter-spacing:0.18em;color:var(--accent-hi);text-transform:uppercase;">DJ Requests</div>
+  <div style="font-size:22px;font-weight:700;">Admin Sign In</div>
+  <input id="a-email" type="email" placeholder="Admin email" style="max-width:320px;" onkeydown="if(event.key==='Enter')document.getElementById('a-pw').focus()" />
+  <input id="a-pw" type="password" placeholder="Password" style="max-width:320px;" onkeydown="if(event.key==='Enter')adminLogin()" />
+  <button class="btn" onclick="adminLogin()" id="login-btn" style="max-width:320px;width:100%;">Sign in</button>
+  <div id="login-err" class="err"></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="top-bar">
+    <div>
+      <h1>DJ Requests <span>Admin</span></h1>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="admin-email-display"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="/picker.html" style="font-size:12px;color:var(--accent-hi);text-decoration:none;">← DJ Tool</a>
+      <button class="logout-btn" onclick="adminLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Create DJ -->
+  <div class="card">
+    <div class="section-title">Create DJ Account</div>
+    <div class="grid" style="margin-bottom:10px;">
+      <input id="new-name" placeholder="Display name (e.g. DJ Filtah)" />
+      <input id="new-slug" placeholder="Slug (e.g. filtah)" />
+      <input id="new-email" type="email" placeholder="Email" />
+      <input id="new-pw" type="password" placeholder="Password" />
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-sm" onclick="createDJ()" id="create-btn">Create DJ</button>
+      <div id="create-msg"></div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);">
+      Guest link will be: <code style="color:var(--accent-hi);">dj-you.netlify.app/?dj=<span id="slug-preview">slug</span></code>
+    </div>
+  </div>
+
+  <!-- DJ List -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="section-title" style="margin-bottom:0;">DJ Accounts</div>
+      <button class="btn btn-sm" onclick="loadDJs()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);">↻ Refresh</button>
+    </div>
+    <div id="dj-list"><div style="color:var(--muted);font-size:13px;">Loading…</div></div>
+  </div>
+</div>
+
+</div>
+<script>
+const AUTH_KEY = 'djapp_admin_session';
+
+function getSession() { try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; } }
+function saveSession(s) { localStorage.setItem(AUTH_KEY, JSON.stringify(s)); }
+function clearSession() { localStorage.removeItem(AUTH_KEY); }
+function getToken() { const s = getSession(); return s ? s.access_token : null; }
+
+async function adminLogin() {
+  const email = document.getElementById('a-email').value.trim();
+  const pw = document.getElementById('a-pw').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('login-btn');
+  errEl.textContent = '';
+  if (!email || !pw) { errEl.textContent = 'Email and password required.'; return; }
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  const res = await fetch('/.netlify/functions/auth-login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pw }),
+  });
+  const data = await res.json();
+  btn.textContent = 'Sign in'; btn.disabled = false;
+  if (!res.ok) { errEl.textContent = data.error || 'Login failed.'; return; }
+  if (!data.profile || data.profile.role !== 'admin') { errEl.textContent = 'This account does not have admin access.'; return; }
+  saveSession(data);
+  showApp(data);
+}
+
+function showApp(session) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('admin-email-display').textContent = session.user?.email || '';
+  loadDJs();
+}
+
+function adminLogout() {
+  clearSession();
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// Slug preview
+document.getElementById('new-slug').addEventListener('input', function() {
+  document.getElementById('slug-preview').textContent = this.value || 'slug';
+});
+document.getElementById('new-name').addEventListener('input', function() {
+  const slug = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+  const slugEl = document.getElementById('new-slug');
+  if (!slugEl.value) { slugEl.value = slug; document.getElementById('slug-preview').textContent = slug || 'slug'; }
+});
+
+async function createDJ() {
+  const name = document.getElementById('new-name').value.trim();
+  const slug = document.getElementById('new-slug').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const pw = document.getElementById('new-pw').value;
+  const msgEl = document.getElementById('create-msg');
+  const btn = document.getElementById('create-btn');
+  msgEl.textContent = '';
+  if (!name || !slug || !email || !pw) { msgEl.innerHTML = '<span class="err">All fields required.</span>'; return; }
+  btn.textContent = 'Creating…'; btn.disabled = true;
+  const res = await fetch('/.netlify/functions/admin-create-dj', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+    body: JSON.stringify({ display_name: name, slug, email, password: pw }),
+  });
+  const data = await res.json();
+  btn.textContent = 'Create DJ'; btn.disabled = false;
+  if (!res.ok) { msgEl.innerHTML = `<span class="err">${data.error || 'Failed'}</span>`; return; }
+  msgEl.innerHTML = `<span class="ok">✓ Created! Guest link: dj-you.netlify.app/?dj=${slug}</span>`;
+  ['new-name','new-slug','new-email','new-pw'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('slug-preview').textContent = 'slug';
+  loadDJs();
+}
+
+async function loadDJs() {
+  const listEl = document.getElementById('dj-list');
+  listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">Loading…</div>';
+  const res = await fetch('/.netlify/functions/admin-list-djs', {
+    headers: { 'Authorization': `Bearer ${getToken()}` },
+  });
+  if (!res.ok) { listEl.innerHTML = '<div class="err">Failed to load DJs.</div>'; return; }
+  const data = await res.json();
+  const djs = data.djs || [];
+  if (!djs.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">No DJs yet.</div>'; return; }
+  listEl.innerHTML = djs.map(dj => `
+    <div class="dj-card" style="margin-bottom:8px;">
+      <div>
+        <div class="dj-name">${dj.display_name} <span style="font-size:11px;background:#1e1b4b;color:var(--accent-hi);border-radius:4px;padding:1px 6px;">${dj.role}</span></div>
+        <div class="dj-slug">/${dj.slug} · created ${new Date(dj.created_at).toLocaleDateString()}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="badge ${dj.pending_requests === 0 ? 'zero' : ''}">${dj.pending_requests} pending</span>
+        <button class="link-copy" onclick="copyLink('${dj.slug}')">Copy guest link</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyLink(slug) {
+  navigator.clipboard.writeText(`https://dj-you.netlify.app/?dj=${slug}`).then(() => alert(`Copied: dj-you.netlify.app/?dj=${slug}`));
+}
+
+// Auto-login if session exists
+(function() {
+  const session = getSession();
+  if (session && session.access_token && session.profile?.role === 'admin') {
+    showApp(session);
+  }
+})();
+</script>
+</body>
+</html>

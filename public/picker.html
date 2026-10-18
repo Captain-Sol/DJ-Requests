@@ -489,48 +489,130 @@
 <body>
 
 <!-- ── PASSWORD GATE ── -->
-<div id="pw-gate" style="
+<!-- ── LOGIN GATE ── -->
+<div id="login-gate" style="
   position:fixed; inset:0; z-index:9999;
   background:#0d0d1a;
+  background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(109,40,217,0.35) 0%, transparent 70%);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:16px; padding:24px;
 ">
-  <div style="font-family:'Space Mono',monospace; font-size:13px; letter-spacing:0.12em; color:#c084fc;">DJ FILTAH</div>
-  <div style="font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; color:#fff;">Enter password</div>
-  <input id="pw-input" type="password" placeholder="Password"
-    style="
-      background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px;
-      color:#f0f0ff; font-family:'Space Grotesk',sans-serif; font-size:16px;
-      padding:12px 16px; outline:none; width:100%; max-width:320px; text-align:center;
-    "
-    onkeydown="if(event.key==='Enter') checkPw()"
+  <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:#c084fc; text-transform:uppercase;">DJ Requests</div>
+  <div style="font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:#fff; margin-bottom:4px;">Sign in</div>
+  <input id="login-email" type="email" placeholder="Email"
+    style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+      font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px;
+      outline:none; width:100%; max-width:320px;"
+    onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()"
   />
-  <button onclick="checkPw()" style="
+  <input id="login-password" type="password" placeholder="Password"
+    style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+      font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px;
+      outline:none; width:100%; max-width:320px;"
+    onkeydown="if(event.key==='Enter') doLogin()"
+  />
+  <button id="login-btn" onclick="doLogin()" style="
     background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:none;
     border-radius:12px; font-family:'Space Grotesk',sans-serif; font-size:15px;
     font-weight:600; padding:12px 32px; cursor:pointer; width:100%; max-width:320px;
-  ">Enter</button>
-  <div id="pw-error" style="color:#f87171; font-size:13px; min-height:18px;"></div>
+  ">Sign in</button>
+  <div id="login-error" style="color:#f87171; font-size:13px; min-height:18px;"></div>
+  <div id="login-status" style="color:#9090b8; font-size:12px; min-height:16px;"></div>
 </div>
 
 <script>
-(function() {
-  const PW = 'taftlovescam';
-  const KEY = 'djfiltah_auth';
-  if (sessionStorage.getItem(KEY) === '1') {
-    document.getElementById('pw-gate').style.display = 'none';
-  }
-  window.checkPw = function() {
-    const val = document.getElementById('pw-input').value;
-    if (val === PW) {
-      sessionStorage.setItem(KEY, '1');
-      document.getElementById('pw-gate').style.display = 'none';
-    } else {
-      document.getElementById('pw-error').textContent = 'Wrong password.';
-      document.getElementById('pw-input').value = '';
-      document.getElementById('pw-input').focus();
+// ── AUTH ──
+const AUTH_KEY = 'djapp_session';
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; }
+}
+function saveSession(s) {
+  localStorage.setItem(AUTH_KEY, JSON.stringify(s));
+}
+function clearSession() {
+  localStorage.removeItem(AUTH_KEY);
+}
+function getToken() {
+  const s = getSession();
+  return s ? s.access_token : null;
+}
+function getProfile() {
+  const s = getSession();
+  return s ? s.profile : null;
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const statusEl = document.getElementById('login-status');
+  const btn = document.getElementById('login-btn');
+  errEl.textContent = '';
+  if (!email || !pw) { errEl.textContent = 'Email and password required.'; return; }
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  statusEl.textContent = '';
+  try {
+    const res = await fetch('/.netlify/functions/auth-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Login failed.'; btn.textContent = 'Sign in'; btn.disabled = false; return; }
+    saveSession(data);
+    document.getElementById('login-gate').style.display = 'none';
+    statusEl.textContent = 'Loading your data…';
+    await loadStateFromSupabase();
+    // Show admin link if admin
+    if (data.profile && data.profile.role === 'admin') {
+      const adminLink = document.getElementById('admin-link');
+      if (adminLink) adminLink.style.display = 'inline-flex';
     }
-  };
+    // Update header with DJ name
+    const nameEl = document.getElementById('dj-display-name');
+    if (nameEl && data.profile) nameEl.textContent = data.profile.display_name || data.user.email;
+    // Show logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+  } catch(e) {
+    errEl.textContent = 'Connection error — try again.';
+    btn.textContent = 'Sign in'; btn.disabled = false;
+  }
+}
+
+async function doLogout() {
+  clearSession();
+  // Clear in-memory state
+  pool = []; flagged = []; history = []; denied = []; scanCache = {};
+  renderPool(); renderFlagged(); renderDenied();
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-gate').style.display = 'flex';
+}
+
+// On page load: check for existing valid session
+(async function() {
+  const session = getSession();
+  if (session && session.access_token) {
+    document.getElementById('login-status').textContent = 'Resuming session…';
+    try {
+      await loadStateFromSupabase();
+      document.getElementById('login-gate').style.display = 'none';
+      if (session.profile && session.profile.role === 'admin') {
+        const adminLink = document.getElementById('admin-link');
+        if (adminLink) adminLink.style.display = 'inline-flex';
+      }
+      const nameEl = document.getElementById('dj-display-name');
+      if (nameEl && session.profile) nameEl.textContent = session.profile.display_name || session.user?.email || '';
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    } catch(e) {
+      clearSession();
+    }
+  }
 })();
 </script>
 
@@ -979,7 +1061,12 @@
 
     <div class="top-bar">
       <div class="filtah-title"><span class="dj-part">DJ</span> FILTAH</div>
-      <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" title="Settings">&#9776;</button>
+      <div style="display:flex;align-items:center;gap:8px;position:absolute;right:0;">
+        <span id="dj-display-name" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;"></span>
+        <a id="admin-link" href="/admin.html" style="display:none;font-size:11px;color:var(--accent-hi);text-decoration:none;border:1px solid var(--accent);border-radius:6px;padding:3px 8px;">Admin</a>
+        <button id="logout-btn" onclick="doLogout()" style="display:none;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;cursor:pointer;">Sign out</button>
+        <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" title="Settings">&#9776;</button>
+      </div>
     </div>
     <p class="filtah-subtitle-line">load &bull; scan &bull; drop the banger</p>
   </div>
@@ -1484,7 +1571,50 @@ function updatePickStats() {
 }
 
 // ── STATE ──
+// ── SUPABASE SYNC ──
+let _saveTimer = null;
+async function loadStateFromSupabase() {
+  const token = getToken();
+  if (!token) return;
+  const res = await fetch('/.netlify/functions/dj-state', {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!res.ok) { if (res.status === 401) { clearSession(); return; } throw new Error('Load failed'); }
+  const data = await res.json();
+  pool    = (data.pool    || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, hadLyrics: r.had_lyrics, reputationOverview: r.reputation_overview, confidence: r.confidence, vibeNote: r.vibe_note, spotifyUrl: r.spotify_url, addedAt: new Date(r.added_at).getTime() }));
+  history = (data.history || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, playedAt: new Date(r.played_at).getTime() }));
+  flagged = (data.flagged || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, reason: r.reason, addedAt: new Date(r.added_at).getTime() }));
+  denied  = (data.denied  || []).map(r => ({ song: r.song, artist: r.artist, denyCount: r.deny_count, addedAt: new Date(r.added_at).getTime() }));
+  // Rebuild scanCache from pool
+  scanCache = {};
+  pool.forEach(r => { scanCache[normalizeSongKey(r.song, r.artist)] = { status: 'approved', ...r }; });
+  // Apply settings
+  if (data.settings) {
+    const s = data.settings;
+    if (s.filter_mode) { filterMode = s.filter_mode; setFilterMode(s.filter_mode); }
+    if (s.vibe_prompt !== undefined) { const vp = document.getElementById('vibe-prompt'); if (vp) vp.value = s.vibe_prompt; }
+    if (s.event_type) { const et = document.getElementById('event-type'); if (et) { et.value = s.event_type; updateEventTypeUI(); } }
+  }
+  renderPool(); renderFlagged(); renderDenied(); updateStorageHint(); updatePickStats();
+}
+
+async function saveStateToSupabase() {
+  const token = getToken();
+  if (!token) return;
+  const settings = {
+    filter_mode: filterMode,
+    vibe_prompt: (document.getElementById('vibe-prompt') || {}).value || '',
+    event_type: (document.getElementById('event-type') || {}).value || 'mixed',
+  };
+  await fetch('/.netlify/functions/dj-state', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pool, history, flagged, denied, settings }),
+  }).catch(() => {}); // best-effort
+}
+
 function saveAppState() {
+  // Keep localStorage as fast local cache
   saveJson(STORAGE_KEYS.pool, pool);
   saveJson(STORAGE_KEYS.flagged, flagged);
   saveJson(STORAGE_KEYS.history, history);
@@ -1492,6 +1622,9 @@ function saveAppState() {
   saveJson(STORAGE_KEYS.scanCache, scanCache);
   const sheetUrl = document.getElementById('sheet-url');
   if (sheetUrl) storageSet(STORAGE_KEYS.sheetUrl, sheetUrl.value.trim());
+  // Debounce Supabase save — don't hammer on every single action
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveStateToSupabase, 3000);
 }
 
 function loadSavedState() {
