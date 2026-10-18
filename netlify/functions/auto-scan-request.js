@@ -139,7 +139,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const { dj_id, request_id, song, artist, spotify_url } = body;
+  const { dj_id, request_id, song, artist, spotify_id, spotify_url } = body;
   if (!dj_id || !song) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'dj_id and song required' }) };
   }
@@ -163,6 +163,7 @@ exports.handler = async (event) => {
     dj_id,
     song,
     artist: artist || '—',
+    spotify_id: spotify_id || null,
     spotify_url: spotify_url || null,
     added_at: now,
     had_lyrics: false,

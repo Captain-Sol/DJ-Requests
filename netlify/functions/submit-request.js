@@ -77,6 +77,7 @@ exports.handler = async (event) => {
       request_id: requestId,
       song: String(title).trim(),
       artist: String(artist).trim(),
+      spotify_id: String(spotifyId).trim(),
       spotify_url: String(spotifyUrl || '').trim(),
     }),
   }).catch(() => {}); // fire-and-forget
