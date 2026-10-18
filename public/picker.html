@@ -1050,42 +1050,45 @@
   <!-- VIBE CHECK -->
   <div class="card">
     <div class="section-title">Vibe Check</div>
-    <div class="two-col">
-      <div>
-        <label>Event Type</label>
-        <select id="event-type" onchange="onEventTypeChange()">
-          <option value="school-dance">&#127881; School Dance</option>
-          <option value="homecoming">&#128081; Homecoming</option>
-          <option value="prom">&#10024; Prom</option>
-          <option value="house-party">&#127968; House Party</option>
-          <option value="staff-party">&#127870; Staff / Adult Party</option>
-          <option value="block-party">&#127992; Block Party / Outdoor</option>
-          <option value="slow-night">&#127769; Slow Night / Chill</option>
-          <option value="mixed">&#127926; Mixed / General</option>
-          <option value="custom">&#9998; Custom…</option>
-        </select>
-        <input type="text" id="event-type-custom" placeholder="Describe your event (e.g. 8th grade graduation)" oninput="saveVibeSettings()" style="display:none; margin-top:6px;" />
-      </div>
-    </div>
-    <label style="margin-top:10px;">Vibe Prompt <span style="color:#bbb;font-weight:400;">— describe your crowd so suggestions match</span></label>
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;" id="vibe-presets">
+
+    <!-- Event type row -->
+    <label>Event Type</label>
+    <select id="event-type" onchange="onEventTypeChange()" style="margin-bottom:6px;">
+      <option value="school-dance">🎉 School Dance</option>
+      <option value="homecoming">👑 Homecoming</option>
+      <option value="prom">✨ Prom</option>
+      <option value="house-party">🏠 House Party</option>
+      <option value="staff-party">🥂 Staff / Adult Party</option>
+      <option value="block-party">🎪 Block Party / Outdoor</option>
+      <option value="slow-night">🌙 Slow Night / Chill</option>
+      <option value="mixed">🎶 Mixed / General</option>
+      <option value="custom">✏️ Custom…</option>
+    </select>
+    <input type="text" id="event-type-custom" placeholder="Describe your event (e.g. 8th grade graduation)" oninput="saveVibeSettings()" style="display:none; margin-bottom:8px;" />
+
+    <!-- Vibe presets -->
+    <label style="margin-bottom:6px;">Quick Vibe</label>
+    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;" id="vibe-presets">
       <button class="vibe-preset-btn" onclick="applyVibePreset('🎄 Christmas party — festive holiday songs, Mariah Carey, Michael Bublé, classic Christmas hits')">🎄 Christmas</button>
-      <button class="vibe-preset-btn" onclick="applyVibePreset('🔥 High energy hip-hop and trap — crowd wants bangers, current hits, keep energy up')">🔥 Hip-Hop Bangers</button>
-      <button class="vibe-preset-btn" onclick="applyVibePreset('💜 R&B and slow jams — smooth vibes, neo-soul, romantic energy')">💜 R&amp;B / Slow Jams</button>
-      <button class="vibe-preset-btn" onclick="applyVibePreset('🎉 Party mix — top 40 pop hits, upbeat, everyone on the floor, all ages')">🎉 Top 40 Party</button>
+      <button class="vibe-preset-btn" onclick="applyVibePreset('🔥 High energy hip-hop and trap — crowd wants bangers, current hits, keep energy up')">🔥 Hip-Hop</button>
+      <button class="vibe-preset-btn" onclick="applyVibePreset('💜 R&B and slow jams — smooth vibes, neo-soul, romantic energy')">💜 R&amp;B</button>
+      <button class="vibe-preset-btn" onclick="applyVibePreset('🎉 Party mix — top 40 pop hits, upbeat, everyone on the floor, all ages')">🎉 Top 40</button>
       <button class="vibe-preset-btn" onclick="applyVibePreset('🤠 Country — modern country hits, line dance friendly, southern crowd')">🤠 Country</button>
       <button class="vibe-preset-btn" onclick="applyVibePreset('⚡ EDM and electronic — drops, build-ups, dance floor energy, festival vibes')">⚡ EDM</button>
       <button class="vibe-preset-btn" onclick="applyVibePreset('🕺 Old school throwbacks — 90s and 2000s hits, nostalgia, crowd sing-alongs')">🕺 Throwbacks</button>
       <button class="vibe-preset-btn" onclick="applyVibePreset('🌙 Wind down — chill the energy, slower songs, end of night vibes')">🌙 Wind Down</button>
     </div>
-    <div style="display:flex; gap:6px; align-items:flex-start;">
-      <textarea id="vibe-prompt" placeholder="e.g. 10th graders, mostly hip-hop fans, high energy, last song should be a banger" oninput="saveVibeSettings()" style="flex:1; margin-bottom:0;"></textarea>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <button onclick="saveVibeSettings(); showVibeSaved()" style="white-space:nowrap; padding:8px 12px; font-size:12px;" title="Save vibe settings">Save &#10003;</button>
-        <button onclick="clearVibePrompt()" style="white-space:nowrap; padding:8px 12px; font-size:12px; background:transparent; border-color:var(--border); color:var(--muted);" title="Clear vibe prompt">Clear</button>
-      </div>
+
+    <!-- Prompt + clear -->
+    <div style="position:relative;">
+      <textarea id="vibe-prompt" placeholder="Describe your crowd… e.g. 10th graders, hip-hop fans, high energy" oninput="saveVibeSettings()" style="width:100%; padding-right:60px; margin-bottom:0;"></textarea>
+      <button onclick="clearVibePrompt()" title="Clear" style="
+        position:absolute; right:8px; top:8px;
+        background:transparent; border:1px solid var(--border); color:var(--muted);
+        border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer;
+      ">✕</button>
     </div>
-    <div class="hint" id="playlist-hint">Suggestions will match your vibe prompt. Leave blank to use genre defaults.</div>
+    <div class="hint" id="playlist-hint" style="margin-top:5px;">Shapes AI suggestions — doesn't affect content filtering.</div>
   </div>
 
   <!-- LOAD REQUESTS -->
@@ -1957,15 +1960,12 @@ function buildVibeContext() {
   const eventType = document.getElementById('event-type').value;
   const customEventType = document.getElementById('event-type-custom').value.trim();
   const vibePrompt = document.getElementById('vibe-prompt').value.trim();
-  const playlistUrl = document.getElementById('playlist-url').value.trim();
   let context = eventType === 'custom' && customEventType
     ? `This is a custom event: "${customEventType}". Use your best judgment on what is appropriate for this crowd.`
     : (EVENT_VIBE_PROMPTS[eventType] || EVENT_VIBE_PROMPTS['mixed']);
   context += '\n\nGenre viability reference:\n' + DEFAULT_GENRE_VIBE;
   if (playlistTracks.length > 0) {
     context += `\n\nReference playlist tracks (use as vibe benchmark — songs similar in energy/genre to these are high viability):\n${playlistTracks.slice(0, 40).join(', ')}`;
-  } else if (playlistUrl) {
-    context += `\n\nA playlist was provided (${playlistUrl}) but tracks could not be fetched. Use built-in genre defaults.`;
   }
   if (vibePrompt) context += `\n\nAdditional context from the DJ: ${vibePrompt}`;
   return context;
