@@ -262,6 +262,50 @@
   }
   #song-list, #flagged-list, #denied-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
 
+  /* ── Pixel dancer panels ── */
+  .pool-scene {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .pool-scene > .card {
+    flex: 1;
+    min-width: 0;
+  }
+  .dancer-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 4px;
+    min-width: 36px;
+    flex-shrink: 0;
+  }
+  .bit-figure {
+    image-rendering: pixelated;
+    display: block;
+    flex-shrink: 0;
+  }
+  @keyframes dance {
+    0%,100% { transform: translateY(0) scaleX(1); }
+    25%      { transform: translateY(-4px) scaleX(1); }
+    50%      { transform: translateY(0) scaleX(-1); }
+    75%      { transform: translateY(-4px) scaleX(-1); }
+  }
+  @keyframes shrug {
+    0%,100% { transform: rotate(-4deg); }
+    50%      { transform: rotate(4deg); }
+  }
+  @keyframes arrest {
+    0%,100% { transform: translateX(0); }
+    30%      { transform: translateX(-3px); }
+    70%      { transform: translateX(3px); }
+  }
+  .dancer-col .dancing   { animation: dance   0.6s steps(1) infinite; }
+  .dancer-col .shrugging { animation: shrug   1.2s ease-in-out infinite; }
+  .dancer-col .arrested  { animation: arrest  0.8s ease-in-out infinite; }
+
   /* ── Guest Requests panel ── */
   .guest-req-card { border-color: rgba(109,40,217,0.5); }
   .guest-req-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
@@ -940,6 +984,136 @@ function copyGuestLink() {
     }
   }
 })();
+
+// ── PIXEL DANCERS ──
+// SVGs are 16×20 pixel art figures, image-rendering:pixelated
+
+function dancerSVG(type, seed) {
+  // type: 'dance' | 'shrug' | 'arrest'
+  // seed: used to vary skin/outfit color
+  const skins  = ['#f5c89a','#d4956a','#8b5a2b','#c68642','#f0d0a0'];
+  const shirts = ['#6d28d9','#059669','#2563eb','#dc2626','#d97706','#c084fc','#34d399'];
+  const pants  = ['#1e1b4b','#1f2937','#374151','#4c1d95','#1e3a5f'];
+  const sk = skins [seed % skins.length];
+  const sh = shirts[seed % shirts.length];
+  const pa = pants [(seed % 3)];
+
+  if (type === 'dance') {
+    // Simple dancing figure: arms up
+    return `<svg class="bit-figure dancing" width="16" height="20" viewBox="0 0 8 10" xmlns="http://www.w3.org/2000/svg">
+      <!-- head -->
+      <rect x="3" y="0" width="2" height="2" fill="${sk}"/>
+      <!-- body -->
+      <rect x="3" y="2" width="2" height="3" fill="${sh}"/>
+      <!-- left arm up -->
+      <rect x="1" y="1" width="2" height="1" fill="${sk}"/>
+      <!-- right arm up -->
+      <rect x="5" y="1" width="2" height="1" fill="${sk}"/>
+      <!-- pants -->
+      <rect x="3" y="5" width="2" height="2" fill="${pa}"/>
+      <!-- left leg -->
+      <rect x="2" y="7" width="1" height="2" fill="${pa}"/>
+      <!-- right leg -->
+      <rect x="4" y="7" width="1" height="2" fill="${pa}"/>
+      <!-- left foot -->
+      <rect x="1" y="8" width="1" height="1" fill="${sk}"/>
+      <!-- right foot -->
+      <rect x="5" y="8" width="1" height="1" fill="${sk}"/>
+    </svg>`;
+  }
+
+  if (type === 'shrug') {
+    // Shrugging figure: arms out to sides, slightly raised
+    return `<svg class="bit-figure shrugging" width="16" height="20" viewBox="0 0 8 10" xmlns="http://www.w3.org/2000/svg">
+      <!-- head -->
+      <rect x="3" y="0" width="2" height="2" fill="${sk}"/>
+      <!-- question mark above head -->
+      <rect x="5" y="0" width="1" height="1" fill="#fbbf24"/>
+      <!-- body -->
+      <rect x="3" y="2" width="2" height="3" fill="${sh}"/>
+      <!-- arms out -->
+      <rect x="1" y="3" width="2" height="1" fill="${sk}"/>
+      <rect x="5" y="3" width="2" height="1" fill="${sk}"/>
+      <!-- hands up slightly -->
+      <rect x="0" y="2" width="1" height="1" fill="${sk}"/>
+      <rect x="7" y="2" width="1" height="1" fill="${sk}"/>
+      <!-- pants -->
+      <rect x="3" y="5" width="2" height="2" fill="${pa}"/>
+      <!-- legs -->
+      <rect x="3" y="7" width="1" height="2" fill="${pa}"/>
+      <rect x="4" y="7" width="1" height="2" fill="${pa}"/>
+    </svg>`;
+  }
+
+  if (type === 'arrest') {
+    // Dancer being cuffed: one arm behind back, police figure next to them
+    return `<svg class="bit-figure arrested" width="28" height="20" viewBox="0 0 14 10" xmlns="http://www.w3.org/2000/svg">
+      <!-- PERP (left) -->
+      <!-- head -->
+      <rect x="1" y="0" width="2" height="2" fill="${sk}"/>
+      <!-- body -->
+      <rect x="1" y="2" width="2" height="3" fill="${sh}"/>
+      <!-- arm behind back -->
+      <rect x="3" y="3" width="1" height="1" fill="${sk}"/>
+      <!-- handcuff -->
+      <rect x="4" y="3" width="1" height="1" fill="#94a3b8"/>
+      <!-- pants -->
+      <rect x="1" y="5" width="2" height="2" fill="${pa}"/>
+      <!-- legs -->
+      <rect x="1" y="7" width="1" height="2" fill="${pa}"/>
+      <rect x="2" y="7" width="1" height="2" fill="${pa}"/>
+
+      <!-- POLICE (right) — blue uniform -->
+      <!-- hat -->
+      <rect x="9" y="0" width="3" height="1" fill="#1d4ed8"/>
+      <!-- head -->
+      <rect x="9" y="1" width="2" height="2" fill="${skins[1]}"/>
+      <!-- body -->
+      <rect x="9" y="3" width="2" height="2" fill="#1d4ed8"/>
+      <!-- badge -->
+      <rect x="9" y="3" width="1" height="1" fill="#fbbf24"/>
+      <!-- arm grabbing -->
+      <rect x="7" y="3" width="2" height="1" fill="${skins[1]}"/>
+      <!-- grip on cuff -->
+      <rect x="5" y="3" width="2" height="1" fill="${skins[1]}"/>
+      <!-- pants -->
+      <rect x="9" y="5" width="2" height="2" fill="#1e3a5f"/>
+      <!-- legs -->
+      <rect x="9" y="7" width="1" height="2" fill="#1e3a5f"/>
+      <rect x="10" y="7" width="1" height="2" fill="#1e3a5f"/>
+    </svg>`;
+  }
+  return '';
+}
+
+function updateDancers(colIds, type, count) {
+  const n = Math.min(count, 5);
+  const html = n === 0 ? '' : Array.from({length: n}, (_, i) => dancerSVG(type, i * 7 + type.length)).join('');
+  colIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+// Hook into render functions
+const _origRenderPool    = renderPool;
+const _origRenderFlagged = renderFlagged;
+const _origRenderDenied  = renderDenied;
+
+renderPool = function() {
+  _origRenderPool.apply(this, arguments);
+  updateDancers(['dancers-pool-left', 'dancers-pool-right'], 'dance', pool.length);
+};
+renderFlagged = function() {
+  _origRenderFlagged.apply(this, arguments);
+  updateDancers(['dancers-flagged-left', 'dancers-flagged-right'], 'shrug', flagged.length);
+};
+renderDenied = function() {
+  _origRenderDenied.apply(this, arguments);
+  updateDancers(['dancers-denied-left', 'dancers-denied-right'], 'arrest', denied.length);
+};
+
+})();
 </script>
 
 <!-- ── PIXEL RECORD SUGGESTION PANEL ── -->
@@ -1531,49 +1705,61 @@ function copyGuestLink() {
   </div>
 
   <!-- APPROVED POOL -->
-  <div class="card">
-    <div class="flex-between">
-      <div class="section-title" style="margin-bottom:0;">Approved pool</div>
-      <div class="stat"><strong id="pool-count">0</strong> songs ready</div>
+  <div class="pool-scene">
+    <div class="dancer-col" id="dancers-pool-left"></div>
+    <div class="card">
+      <div class="flex-between">
+        <div class="section-title" style="margin-bottom:0;">Approved pool</div>
+        <div class="stat"><strong id="pool-count">0</strong> songs ready</div>
+      </div>
+      <div class="pool-controls">
+        <label>Sort:</label>
+        <select id="pool-sort" onchange="renderPool()">
+          <option value="added">Time added ↓</option>
+          <option value="energy-high">Energy: High first</option>
+          <option value="energy-low">Energy: Slow first</option>
+          <option value="name">Name A–Z</option>
+        </select>
+        <label style="margin-left:6px;">Show:</label>
+        <select id="pool-filter" onchange="renderPool()">
+          <option value="all">All</option>
+          <option value="unplayed">Unplayed only</option>
+          <option value="played">Played only</option>
+          <option value="high">⚡ High energy</option>
+          <option value="mid">🎵 Mid energy</option>
+          <option value="slow">💎 Slow</option>
+        </select>
+      </div>
+      <div id="song-list"><span style="font-size:13px;color:#bbb;">No approved songs yet.</span></div>
     </div>
-    <div class="pool-controls">
-      <label>Sort:</label>
-      <select id="pool-sort" onchange="renderPool()">
-        <option value="added">Time added ↓</option>
-        <option value="energy-high">Energy: High first</option>
-        <option value="energy-low">Energy: Slow first</option>
-        <option value="name">Name A–Z</option>
-      </select>
-      <label style="margin-left:6px;">Show:</label>
-      <select id="pool-filter" onchange="renderPool()">
-        <option value="all">All</option>
-        <option value="unplayed">Unplayed only</option>
-        <option value="played">Played only</option>
-        <option value="high">⚡ High energy</option>
-        <option value="mid">🎵 Mid energy</option>
-        <option value="slow">💎 Slow</option>
-      </select>
-    </div>
-    <div id="song-list"><span style="font-size:13px;color:#bbb;">No approved songs yet.</span></div>
+    <div class="dancer-col" id="dancers-pool-right"></div>
   </div>
 
   <!-- FLAGGED -->
-  <div class="card warn">
-    <div class="flex-between">
-      <div class="section-title warn" style="margin-bottom:0;">&#9888; Flagged — your call</div>
-      <div class="stat"><strong id="flagged-count">0</strong> flagged</div>
+  <div class="pool-scene">
+    <div class="dancer-col" id="dancers-flagged-left"></div>
+    <div class="card warn" style="flex:1;">
+      <div class="flex-between">
+        <div class="section-title warn" style="margin-bottom:0;">&#9888; Flagged — your call</div>
+        <div class="stat"><strong id="flagged-count">0</strong> flagged</div>
+      </div>
+      <div id="flagged-list"><span style="font-size:13px;color:#bbb;">Nothing flagged.</span></div>
     </div>
-    <div id="flagged-list"><span style="font-size:13px;color:#bbb;">Nothing flagged.</span></div>
+    <div class="dancer-col" id="dancers-flagged-right"></div>
   </div>
 
   <!-- DENIED -->
-  <div class="card denied-card">
-    <div class="flex-between">
-      <div class="section-title denied" style="margin-bottom:0;">&#128683; Denied</div>
-      <div class="stat"><strong id="denied-count">0</strong> denied</div>
+  <div class="pool-scene">
+    <div class="dancer-col" id="dancers-denied-left"></div>
+    <div class="card denied-card" style="flex:1;">
+      <div class="flex-between">
+        <div class="section-title denied" style="margin-bottom:0;">&#128683; Denied</div>
+        <div class="stat"><strong id="denied-count">0</strong> denied</div>
+      </div>
+      <div class="hint" style="margin-bottom:8px;">Songs you've explicitly rejected. Re-submissions are tracked — the count badge shows how many times the same song has been denied.</div>
+      <div id="denied-list"><span style="font-size:13px;color:#bbb;">Nothing denied yet.</span></div>
     </div>
-    <div class="hint" style="margin-bottom:8px;">Songs you've explicitly rejected. Re-submissions are tracked — the count badge shows how many times the same song has been denied.</div>
-    <div id="denied-list"><span style="font-size:13px;color:#bbb;">Nothing denied yet.</span></div>
+    <div class="dancer-col" id="dancers-denied-right"></div>
   </div>
 
   <!-- PICK -->
@@ -1902,14 +2088,27 @@ async function loadStateFromSupabase() {
   });
   if (!res.ok) { if (res.status === 401) { clearSession(); return; } throw new Error('Load failed'); }
   const data = await res.json();
-  pool    = (data.pool    || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, hadLyrics: r.had_lyrics, reputationOverview: r.reputation_overview, confidence: r.confidence, vibeNote: r.vibe_note, spotifyUrl: r.spotify_url, addedAt: new Date(r.added_at).getTime() }));
+
+  // Merge server state with any in-memory items added since last save (e.g. from auto-scan)
+  const serverPool    = (data.pool    || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, hadLyrics: r.had_lyrics, reputationOverview: r.reputation_overview, confidence: r.confidence, vibeNote: r.vibe_note, spotifyUrl: r.spotify_url, addedAt: new Date(r.added_at).getTime() }));
+  const serverFlagged = (data.flagged || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, reason: r.reason, addedAt: new Date(r.added_at).getTime() }));
+  const serverDenied  = (data.denied  || []).map(r => ({ song: r.song, artist: r.artist, denyCount: r.deny_count, addedAt: new Date(r.added_at).getTime() }));
+
+  function mergeByKey(existing, incoming) {
+    const seen = new Set(existing.map(r => normalizeSongKey(r.song, r.artist)));
+    return [...existing, ...incoming.filter(r => !seen.has(normalizeSongKey(r.song, r.artist)))];
+  }
+
+  pool    = mergeByKey(pool,    serverPool);
+  flagged = mergeByKey(flagged, serverFlagged);
+  denied  = mergeByKey(denied,  serverDenied);
   history = (data.history || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, playedAt: new Date(r.played_at).getTime() }));
-  flagged = (data.flagged || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, reason: r.reason, addedAt: new Date(r.added_at).getTime() }));
-  denied  = (data.denied  || []).map(r => ({ song: r.song, artist: r.artist, denyCount: r.deny_count, addedAt: new Date(r.added_at).getTime() }));
-  // Rebuild scanCache from pool
+
+  // Rebuild scanCache from merged pool
   scanCache = {};
   pool.forEach(r => { scanCache[normalizeSongKey(r.song, r.artist)] = { status: 'approved', ...r }; });
-  // Apply settings
+
+  // Apply settings (only on initial load — don't overwrite mid-session tweaks)
   if (data.settings) {
     const s = data.settings;
     if (s.filter_mode) { filterMode = s.filter_mode; setFilterMode(s.filter_mode); }
