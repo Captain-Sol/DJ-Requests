@@ -698,6 +698,8 @@ async function doLogin() {
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Login failed.'; btn.textContent = 'Sign in'; btn.disabled = false; return; }
     saveSession(data);
+    // Clear any leftover state from a previous account in this browser
+    clearAppLocalStorage();
     document.getElementById('login-gate').style.display = 'none';
     // Show header UI immediately (before state load, so a load error doesn't leave them invisible)
     if (data.profile && data.profile.role === 'admin') {
@@ -725,8 +727,22 @@ async function doLogin() {
   }
 }
 
+function clearAppLocalStorage() {
+  // Wipe all app state keys so a new account starts clean
+  Object.values(STORAGE_KEYS).forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+  // Also nuke legacy keys
+  ['pool','flagged','history','denied','scanCache','sheetUrl','filterMode','persistMode',
+   'eventType','eventTypeCustom','vibePrompt','playlistUrl','urlRowOpen','menuOpen'].forEach(name => {
+    try {
+      localStorage.removeItem('djRequestPicker.v8.' + name);
+      localStorage.removeItem('djRequestPicker.v7.' + name);
+    } catch(e) {}
+  });
+}
+
 async function doLogout() {
   clearSession();
+  clearAppLocalStorage();
   // Clear in-memory state
   pool = []; flagged = []; history = []; denied = []; scanCache = {};
   renderPool(); renderFlagged(); renderDenied();
@@ -2812,7 +2828,9 @@ function togglePlayed(idx) {
 }
 
 // ── STARTUP ──
-loadSavedState();
+// Only restore localStorage state if there's an active session —
+// otherwise a logged-out browser still shows the previous user's songs.
+if (getSession()) loadSavedState();
 startSuggestTimer();
 
 document.getElementById('song-input').addEventListener('keydown', e => {
