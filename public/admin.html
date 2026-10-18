@@ -118,6 +118,16 @@
     </div>
     <div id="dj-list"><div style="color:var(--muted);font-size:13px;">Loading…</div></div>
   </div>
+
+  <!-- Repair Tool -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div class="section-title" style="margin-bottom:0;">⚠️ Account Repair</div>
+      <button class="btn btn-sm" onclick="loadAllUsers()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);">↻ Scan</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Users who signed up but are missing a DJ profile (broken registration). Fix them by assigning a display name and slug.</div>
+    <div id="orphan-list"><div style="color:var(--muted);font-size:13px;">Click Scan to check for broken accounts.</div></div>
+  </div>
 </div>
 
 </div>
@@ -275,6 +285,86 @@ async function loadDJs() {
 
 function copyLink(slug) {
   navigator.clipboard.writeText(`https://dj-you.netlify.app/?dj=${slug}`).then(() => alert(`Copied: dj-you.netlify.app/?dj=${slug}`));
+}
+
+// ── REPAIR TOOL ──
+async function loadAllUsers() {
+  const listEl = document.getElementById('orphan-list');
+  listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">Scanning…</div>';
+  const res = await fetch('/.netlify/functions/admin-list-auth-users', {
+    headers: { 'Authorization': `Bearer ${getToken()}` },
+  });
+  if (!res.ok) { listEl.innerHTML = '<div class="err">Failed to load users.</div>'; return; }
+  const data = await res.json();
+  const orphans = (data.users || []).filter(u => !u.has_profile);
+  if (!orphans.length) {
+    listEl.innerHTML = '<div style="color:var(--success);font-size:13px;">✓ All accounts look healthy — no missing profiles found.</div>';
+    return;
+  }
+  listEl.innerHTML = orphans.map(u => `
+    <div class="dj-card" style="margin-bottom:10px;flex-direction:column;align-items:stretch;gap:10px;" id="orphan-card-${u.id}">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;">${u.email}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;">
+            ID: ${u.id.slice(0,8)}… · Signed up ${new Date(u.created_at).toLocaleDateString()}
+            ${u.confirmed ? '' : ' · <span style="color:var(--warn);">⚠ email not confirmed</span>'}
+          </div>
+        </div>
+        <span style="font-size:11px;background:#451a03;color:var(--warn);border-radius:4px;padding:2px 8px;font-family:'Space Mono',monospace;">no profile</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <input id="repair-name-${u.id}" placeholder="Display name (e.g. DJ Skipp)" />
+        <input id="repair-slug-${u.id}" placeholder="Slug (e.g. skipp)" oninput="syncRepairSlug('${u.id}')" />
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-sm" onclick="repairUser('${u.id}',this)">Fix Account</button>
+        <div id="repair-msg-${u.id}" style="font-size:13px;"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Wire up display-name → auto-slug
+  orphans.forEach(u => {
+    const nameEl = document.getElementById(`repair-name-${u.id}`);
+    const slugEl = document.getElementById(`repair-slug-${u.id}`);
+    if (nameEl && slugEl) {
+      nameEl.addEventListener('input', function() {
+        if (!slugEl.dataset.userEdited) {
+          slugEl.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+        }
+      });
+      slugEl.addEventListener('input', function() { this.dataset.userEdited = '1'; });
+    }
+  });
+}
+
+function syncRepairSlug(id) {
+  // called on slug input — just marks it as user-edited (handled in addEventListener above)
+}
+
+async function repairUser(userId, btn) {
+  const name = document.getElementById(`repair-name-${userId}`).value.trim();
+  const slug = document.getElementById(`repair-slug-${userId}`).value.trim();
+  const msgEl = document.getElementById(`repair-msg-${userId}`);
+  msgEl.textContent = '';
+  if (!name || !slug) { msgEl.innerHTML = '<span class="err">Name and slug required.</span>'; return; }
+  if (!/^[a-z0-9]+$/.test(slug)) { msgEl.innerHTML = '<span class="err">Slug: lowercase letters and numbers only.</span>'; return; }
+  btn.textContent = 'Fixing…'; btn.disabled = true;
+  const res = await fetch('/.netlify/functions/admin-repair-profile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+    body: JSON.stringify({ user_id: userId, display_name: name, slug }),
+  });
+  const data = await res.json();
+  btn.textContent = 'Fix Account'; btn.disabled = false;
+  if (!res.ok) { msgEl.innerHTML = `<span class="err">${data.error || 'Failed.'}</span>`; return; }
+  msgEl.innerHTML = '<span class="ok">✓ Profile created! They can now log in normally.</span>';
+  setTimeout(() => {
+    const card = document.getElementById(`orphan-card-${userId}`);
+    if (card) card.style.opacity = '0.4';
+  }, 1500);
+  loadDJs(); // refresh DJ list too
 }
 
 // (auto-login handled in the access gate block above)
