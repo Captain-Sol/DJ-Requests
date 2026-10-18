@@ -75,6 +75,10 @@
   <div style="font-size:22px;font-weight:700;">Admin Sign In</div>
   <input id="a-email" type="email" placeholder="Admin email" style="max-width:320px;" onkeydown="if(event.key==='Enter')document.getElementById('a-pw').focus()" />
   <input id="a-pw" type="password" placeholder="Password" style="max-width:320px;" onkeydown="if(event.key==='Enter')adminLogin()" />
+  <label style="max-width:320px;width:100%;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;">
+    <input type="checkbox" id="remember-me" style="accent-color:var(--accent-hi);width:15px;height:15px;" />
+    Remember me
+  </label>
   <button class="btn" onclick="adminLogin()" id="login-btn" style="max-width:320px;width:100%;">Sign in</button>
   <div id="login-err" class="err"></div>
 </div>
@@ -134,9 +138,11 @@
 <script>
 const AUTH_KEY = 'djapp_admin_session';
 
-function getSession() { try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; } }
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(AUTH_KEY)) || JSON.parse(sessionStorage.getItem('djapp_admin_session_temp')); } catch { return null; }
+}
 function saveSession(s) { localStorage.setItem(AUTH_KEY, JSON.stringify(s)); }
-function clearSession() { localStorage.removeItem(AUTH_KEY); }
+function clearSession() { localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem('djapp_admin_session_temp'); }
 function getToken() { const s = getSession(); return s ? s.access_token : null; }
 
 // ── ACCESS GATE ──
@@ -188,7 +194,13 @@ async function adminLogin() {
   btn.textContent = 'Sign in'; btn.disabled = false;
   if (!res.ok) { errEl.textContent = data.error || 'Login failed.'; return; }
   if (!data.profile || data.profile.role !== 'admin') { errEl.textContent = 'This account does not have admin access.'; return; }
-  saveSession(data);
+  const remember = document.getElementById('remember-me')?.checked;
+  if (remember) {
+    saveSession(data); // localStorage — survives refresh
+  } else {
+    sessionStorage.setItem('djapp_admin_session_temp', JSON.stringify(data)); // tab-only
+    localStorage.removeItem('djapp_admin_session');
+  }
   showApp(data);
 }
 
