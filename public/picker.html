@@ -2280,6 +2280,7 @@ function renderHistory() {
 // ── SUGGESTION PANEL ──
 let suggestOpen = false;
 let suggestTimer = null;
+let _lastSuggestions = [];
 let lastSuggestFetch = 0;
 
 function toggleSuggestDropdown() {
@@ -2320,11 +2321,12 @@ async function fetchSuggestions() {
 }
 
 function renderSuggestions(suggestions) {
+  _lastSuggestions = suggestions;
   const el = document.getElementById('suggest-list');
   if (!suggestions.length) { el.innerHTML = '<div class="suggest-loading">No suggestions yet — play some songs first.</div>'; return; }
   el.innerHTML = suggestions.map((s, i) => {
     const cls = s.energy || 'unknown';
-    return `<div class="suggest-item" id="sug-${i}" onclick="addSuggestion(${i}, ${JSON.stringify(s.song)}, ${JSON.stringify(s.artist)}, ${JSON.stringify(s.energy || 'unknown')})">
+    return `<div class="suggest-item" id="sug-${i}" onclick="addSuggestion(${i})">
       <div class="suggest-song"><span class="suggest-energy ${cls}"></span>${escapeHtml(s.song)}</div>
       <div class="suggest-artist">${escapeHtml(s.artist)}</div>
       <div class="suggest-reason">${escapeHtml(s.reason || '')}</div>
@@ -2332,7 +2334,12 @@ function renderSuggestions(suggestions) {
   }).join('');
 }
 
-function addSuggestion(idx, song, artist, energy) {
+function addSuggestion(idx) {
+  const s = _lastSuggestions[idx];
+  if (!s) return;
+  const song = s.song;
+  const artist = s.artist;
+  const energy = s.energy || 'unknown';
   // Suggestions are already Claude-vetted — add directly to approved pool, no rescan
   // Note: do NOT check history — suggestions come FROM history, so they'd always bail.
   // Only block if the song is already sitting in pool, flagged, or denied right now.
