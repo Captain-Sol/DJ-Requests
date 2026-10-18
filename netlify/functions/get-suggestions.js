@@ -94,7 +94,19 @@ Respond ONLY with valid JSON, no markdown, no explanation:
 
     const data = await res.json();
     const text = data.content.map(b => b.text || '').join('').trim();
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    // Claude may refuse if vibe text triggers safety filters — fall back gracefully
+    let parsed;
+    try {
+      parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    } catch (parseErr) {
+      // Return empty suggestions with a reason rather than crashing
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suggestions: [], _error: 'Could not parse response — vibe text may have triggered a content filter. Try rewording the vibe.' })
+      };
+    }
 
     return {
       statusCode: 200,

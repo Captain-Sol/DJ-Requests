@@ -2312,11 +2312,15 @@ async function fetchSuggestions() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    if (data._error) {
+      listEl.innerHTML = `<div class="suggest-loading" style="color:var(--warn, #f59e0b);">${data._error}</div>`;
+      return;
+    }
     renderSuggestions(data.suggestions || []);
     const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     footer.textContent = `Updated ${t} · refreshes every 2 min`;
   } catch(e) {
-    listEl.innerHTML = `<div class="suggest-loading" style="color:var(--danger);">Could not load suggestions.</div>`;
+    listEl.innerHTML = `<div class="suggest-loading" style="color:var(--danger);">Could not load suggestions — ${e.message}</div>`;
   }
 }
 
