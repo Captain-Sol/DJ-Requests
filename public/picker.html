@@ -573,9 +573,11 @@ async function doLogin() {
     // Update header with DJ name
     const nameEl = document.getElementById('dj-display-name');
     if (nameEl && data.profile) nameEl.textContent = data.profile.display_name || data.user.email;
-    // Show logout button
+    // Show logout + guest link buttons
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    const guestBtn = document.getElementById('guest-link-btn');
+    if (guestBtn && data.profile?.slug) guestBtn.style.display = 'inline-flex';
   } catch(e) {
     errEl.textContent = 'Connection error — try again.';
     btn.textContent = 'Sign in'; btn.disabled = false;
@@ -591,6 +593,24 @@ async function doLogout() {
   document.getElementById('login-password').value = '';
   document.getElementById('login-error').textContent = '';
   document.getElementById('login-gate').style.display = 'flex';
+  // Hide header buttons
+  const hide = ['logout-btn','guest-link-btn','admin-link'];
+  hide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  const nameEl = document.getElementById('dj-display-name');
+  if (nameEl) nameEl.textContent = '';
+}
+
+function copyGuestLink() {
+  const session = getSession();
+  const slug = session?.profile?.slug;
+  if (!slug) { alert('No slug found — make sure your DJ profile has a slug set.'); return; }
+  const url = `https://dj-you.netlify.app/?dj=${slug}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('guest-link-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
 }
 
 // On page load: check for existing valid session
@@ -609,6 +629,8 @@ async function doLogout() {
       if (nameEl && session.profile) nameEl.textContent = session.profile.display_name || session.user?.email || '';
       const logoutBtn = document.getElementById('logout-btn');
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+      const guestBtn = document.getElementById('guest-link-btn');
+      if (guestBtn && session.profile?.slug) guestBtn.style.display = 'inline-flex';
     } catch(e) {
       clearSession();
     }
@@ -1063,6 +1085,7 @@ async function doLogout() {
       <div class="filtah-title"><span class="dj-part">DJ</span> FILTAH</div>
       <div style="display:flex;align-items:center;gap:8px;position:absolute;right:0;">
         <span id="dj-display-name" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;"></span>
+        <button id="guest-link-btn" onclick="copyGuestLink()" style="display:none;font-size:11px;background:transparent;border:1px solid var(--accent);color:var(--accent-hi);border-radius:6px;padding:3px 8px;cursor:pointer;" title="Copy guest request link">🔗 Guest link</button>
         <a id="admin-link" href="/admin.html" style="display:none;font-size:11px;color:var(--accent-hi);text-decoration:none;border:1px solid var(--accent);border-radius:6px;padding:3px 8px;">Admin</a>
         <button id="logout-btn" onclick="doLogout()" style="display:none;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;cursor:pointer;">Sign out</button>
         <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" title="Settings">&#9776;</button>
