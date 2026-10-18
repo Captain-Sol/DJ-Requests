@@ -497,26 +497,69 @@
   gap:16px; padding:24px;
 ">
   <div style="font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.18em; color:#c084fc; text-transform:uppercase;">DJ Requests</div>
-  <div style="font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:#fff; margin-bottom:4px;">Sign in</div>
-  <input id="login-email" type="email" placeholder="Email"
-    style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
-      font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px;
-      outline:none; width:100%; max-width:320px;"
-    onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()"
-  />
-  <input id="login-password" type="password" placeholder="Password"
-    style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
-      font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px;
-      outline:none; width:100%; max-width:320px;"
-    onkeydown="if(event.key==='Enter') doLogin()"
-  />
-  <button id="login-btn" onclick="doLogin()" style="
-    background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:none;
-    border-radius:12px; font-family:'Space Grotesk',sans-serif; font-size:15px;
-    font-weight:600; padding:12px 32px; cursor:pointer; width:100%; max-width:320px;
-  ">Sign in</button>
-  <div id="login-error" style="color:#f87171; font-size:13px; min-height:18px;"></div>
-  <div id="login-status" style="color:#9090b8; font-size:12px; min-height:16px;"></div>
+
+  <!-- Toggle tabs -->
+  <div style="display:flex;background:#12122a;border:1px solid #2d2d50;border-radius:10px;overflow:hidden;width:100%;max-width:320px;">
+    <button id="tab-signin" onclick="showAuthTab('signin')" style="flex:1;padding:9px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;">Sign in</button>
+    <button id="tab-signup" onclick="showAuthTab('signup')" style="flex:1;padding:9px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;background:transparent;color:#9090b8;">Create account</button>
+  </div>
+
+  <!-- Sign in form -->
+  <div id="form-signin" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:320px;">
+    <input id="login-email" type="email" placeholder="Email"
+      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px;
+        outline:none; width:100%;"
+      onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()"
+    />
+    <input id="login-password" type="password" placeholder="Password"
+      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px;
+        outline:none; width:100%;"
+      onkeydown="if(event.key==='Enter') doLogin()"
+    />
+    <button id="login-btn" onclick="doLogin()" style="
+      background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:none;
+      border-radius:12px; font-family:'Space Grotesk',sans-serif; font-size:15px;
+      font-weight:600; padding:12px 32px; cursor:pointer; width:100%;
+    ">Sign in</button>
+  </div>
+
+  <!-- Sign up form -->
+  <div id="form-signup" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:320px;">
+    <input id="reg-name" type="text" placeholder="DJ display name (e.g. DJ Filtah)"
+      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
+      oninput="autoSlug()"
+    />
+    <div style="width:100%;">
+      <input id="reg-slug" type="text" placeholder="URL slug (e.g. filtah → /?dj=filtah)"
+        style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+          font-family:'Space Mono',monospace; font-size:13px; padding:12px 16px; outline:none; width:100%;"
+      />
+    </div>
+    <input id="reg-email" type="email" placeholder="Email"
+      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
+    />
+    <input id="reg-password" type="password" placeholder="Password (min 6 chars)"
+      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
+    />
+    <input id="reg-invite" type="text" placeholder="Invite code"
+      style="background:#1a1a2e; border:1.5px solid #2d2d50; border-radius:12px; color:#f0f0ff;
+        font-family:'Space Grotesk',sans-serif; font-size:15px; padding:12px 16px; outline:none; width:100%;"
+      onkeydown="if(event.key==='Enter') doRegister()"
+    />
+    <button id="reg-btn" onclick="doRegister()" style="
+      background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:none;
+      border-radius:12px; font-family:'Space Grotesk',sans-serif; font-size:15px;
+      font-weight:600; padding:12px 32px; cursor:pointer; width:100%;
+    ">Create account</button>
+  </div>
+
+  <div id="login-error" style="color:#f87171; font-size:13px; min-height:18px; text-align:center;"></div>
+  <div id="login-status" style="color:#9090b8; font-size:12px; min-height:16px; text-align:center;"></div>
   <a href="/admin.html" style="font-size:12px; color:#9090b8; text-decoration:none; border:1px solid #2d2d50; border-radius:8px; padding:6px 16px; font-family:'Space Grotesk',sans-serif; margin-top:4px;">Admin dashboard →</a>
 </div>
 
@@ -540,6 +583,76 @@ function getToken() {
 function getProfile() {
   const s = getSession();
   return s ? s.profile : null;
+}
+
+// ── AUTH TAB TOGGLE ──
+function showAuthTab(tab) {
+  const isSignin = tab === 'signin';
+  document.getElementById('form-signin').style.display = isSignin ? 'flex' : 'none';
+  document.getElementById('form-signup').style.display = isSignin ? 'none' : 'flex';
+  const activeStyle = 'background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;';
+  const inactiveStyle = 'background:transparent;color:#9090b8;';
+  document.getElementById('tab-signin').style.cssText += isSignin ? activeStyle : inactiveStyle;
+  document.getElementById('tab-signup').style.cssText += isSignin ? inactiveStyle : activeStyle;
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-status').textContent = '';
+}
+
+function autoSlug() {
+  const name = document.getElementById('reg-name').value;
+  const slugEl = document.getElementById('reg-slug');
+  // Only auto-fill if user hasn't manually edited slug
+  if (!slugEl.dataset.edited) {
+    slugEl.value = name.toLowerCase().replace(/^dj\s*/i, '').replace(/[^a-z0-9]+/g, '').trim();
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const slugEl = document.getElementById('reg-slug');
+  if (slugEl) slugEl.addEventListener('input', () => { slugEl.dataset.edited = '1'; });
+});
+
+async function doRegister() {
+  const errEl = document.getElementById('login-error');
+  const statusEl = document.getElementById('login-status');
+  const btn = document.getElementById('reg-btn');
+  errEl.textContent = ''; statusEl.textContent = '';
+
+  const display_name = document.getElementById('reg-name').value.trim();
+  const slug = document.getElementById('reg-slug').value.trim().toLowerCase();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const invite_code = document.getElementById('reg-invite').value.trim();
+
+  if (!display_name || !slug || !email || !password || !invite_code) {
+    errEl.textContent = 'All fields are required.'; return;
+  }
+  if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (!/^[a-z0-9_-]+$/.test(slug)) { errEl.textContent = 'Slug can only use lowercase letters, numbers, hyphens, underscores.'; return; }
+
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  try {
+    const res = await fetch('/.netlify/functions/auth-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, display_name, slug, invite_code }),
+    });
+    const data = await res.json();
+    btn.textContent = 'Create account'; btn.disabled = false;
+    if (!res.ok) { errEl.textContent = data.error || 'Registration failed.'; return; }
+    // Success — show confirmation message, switch to sign-in
+    statusEl.textContent = '✓ ' + data.message;
+    statusEl.style.color = '#34d399';
+    ['reg-name','reg-slug','reg-email','reg-password','reg-invite'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    setTimeout(() => showAuthTab('signin'), 2000);
+  } catch(e) {
+    errEl.textContent = 'Connection error — try again.';
+    btn.textContent = 'Create account'; btn.disabled = false;
+  }
+}
+
+// ── end of registration helpers ──
 }
 
 async function doLogin() {
