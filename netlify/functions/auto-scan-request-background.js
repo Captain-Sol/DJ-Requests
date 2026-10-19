@@ -173,27 +173,35 @@ exports.handler = async (event) => {
     vibe_note: review.vibeNote || '',
   };
 
+  let insertRes, insertTable;
   if (review.appropriate === true) {
-    // → Approved pool
-    await fetch(`${SUPABASE_URL}/rest/v1/dj_pool`, {
+    insertTable = 'dj_pool';
+    insertRes = await fetch(`${SUPABASE_URL}/rest/v1/dj_pool`, {
       method: 'POST',
       headers: { ...svcH(), 'Prefer': 'return=minimal' },
       body: JSON.stringify({ ...base }),
     });
   } else if (review.appropriate === false) {
-    // → Denied (auto-deny: inappropriate songs)
-    await fetch(`${SUPABASE_URL}/rest/v1/dj_denied`, {
+    insertTable = 'dj_denied';
+    insertRes = await fetch(`${SUPABASE_URL}/rest/v1/dj_denied`, {
       method: 'POST',
       headers: { ...svcH(), 'Prefer': 'return=minimal' },
       body: JSON.stringify({ ...base, deny_count: 1 }),
     });
   } else {
-    // appropriate === null → Flagged (parse error, scan failure, etc.)
-    await fetch(`${SUPABASE_URL}/rest/v1/dj_flagged`, {
+    insertTable = 'dj_flagged';
+    insertRes = await fetch(`${SUPABASE_URL}/rest/v1/dj_flagged`, {
       method: 'POST',
       headers: { ...svcH(), 'Prefer': 'return=minimal' },
       body: JSON.stringify({ ...base, reason: review.reason || 'Flagged for review.' }),
     });
+  }
+
+  if (!insertRes.ok) {
+    const errBody = await insertRes.text();
+    console.error(`[auto-scan] INSERT into ${insertTable} failed: ${insertRes.status} — ${errBody}`);
+  } else {
+    console.log(`[auto-scan] "${song}" → ${insertTable} (appropriate=${review.appropriate}, confidence=${review.confidence})`);
   }
 
   // Mark the dj_request row as processed

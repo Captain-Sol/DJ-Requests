@@ -1794,6 +1794,9 @@ renderDenied = function() {
 let pool = [], flagged = [], history = [], denied = [], lastPicked = null;
 let scanCache = {};
 let filterMode = 'somegrime';
+// Track Supabase row IDs explicitly deleted this session so the upsert-save
+// only removes what the user intentionally removed (not everything missing from memory).
+let _deletedPoolIds = [], _deletedFlaggedIds = [], _deletedDeniedIds = [], _deletedHistoryIds = [];
 let pickVibe = 'any';
 let playlistTracks = [];
 let menuOpen = false;
@@ -2095,9 +2098,10 @@ async function loadStateFromSupabase() {
   const data = await res.json();
 
   // Merge server state with any in-memory items added since last save (e.g. from auto-scan)
-  const serverPool    = (data.pool    || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, hadLyrics: r.had_lyrics, reputationOverview: r.reputation_overview, confidence: r.confidence, vibeNote: r.vibe_note, spotifyUrl: r.spotify_url, addedAt: new Date(r.added_at).getTime() }));
-  const serverFlagged = (data.flagged || []).map(r => ({ song: r.song, artist: r.artist, energy: r.energy, reason: r.reason, addedAt: new Date(r.added_at).getTime() }));
-  const serverDenied  = (data.denied  || []).map(r => ({ song: r.song, artist: r.artist, denyCount: r.deny_count, addedAt: new Date(r.added_at).getTime() }));
+  // Keep _dbId so the upsert-based save can reference rows without wiping auto-scanned songs.
+  const serverPool    = (data.pool    || []).map(r => ({ _dbId: r.id, song: r.song, artist: r.artist, energy: r.energy, hadLyrics: r.had_lyrics, reputationOverview: r.reputation_overview, confidence: r.confidence, vibeNote: r.vibe_note, spotifyUrl: r.spotify_url, addedAt: new Date(r.added_at).getTime() }));
+  const serverFlagged = (data.flagged || []).map(r => ({ _dbId: r.id, song: r.song, artist: r.artist, energy: r.energy, reason: r.reason, addedAt: new Date(r.added_at).getTime() }));
+  const serverDenied  = (data.denied  || []).map(r => ({ _dbId: r.id, song: r.song, artist: r.artist, denyCount: r.deny_count, addedAt: new Date(r.added_at).getTime() }));
 
   function mergeByKey(existing, incoming) {
     const seen = new Set(existing.map(r => normalizeSongKey(r.song, r.artist)));
@@ -2131,11 +2135,63 @@ async function saveStateToSupabase() {
     vibe_prompt: (document.getElementById('vibe-prompt') || {}).value || '',
     event_type: (document.getElementById('event-type') || {}).value || 'mixed',
   };
-  await fetch('/.netlify/functions/dj-state', {
+
+  // Map in-memory objects to DB column names; include id (_dbId) for upsert.
+  const mapPool = (r) => ({
+    id: r._dbId || undefined,
+    song: r.song, artist: r.artist || '—',
+    energy: r.energy || 'unknown',
+    had_lyrics: r.hadLyrics || false,
+    reputation_overview: r.reputationOverview || '',
+    confidence: r.confidence || 'medium',
+    vibe_note: r.vibeNote || '',
+    spotify_url: r.spotifyUrl || null,
+    added_at: r.addedAt ? new Date(r.addedAt).toISOString() : new Date().toISOString(),
+  });
+  const mapFlagged = (r) => ({
+    id: r._dbId || undefined,
+    song: r.song, artist: r.artist || '—',
+    energy: r.energy || 'unknown',
+    reason: r.reason || '',
+    added_at: r.addedAt ? new Date(r.addedAt).toISOString() : new Date().toISOString(),
+  });
+  const mapDenied = (r) => ({
+    id: r._dbId || undefined,
+    song: r.song, artist: r.artist || '—',
+    deny_count: r.denyCount || r.deniedCount || 1,
+    added_at: r.addedAt ? new Date(r.addedAt).toISOString() : new Date().toISOString(),
+  });
+  const mapHistory = (r) => ({
+    id: r._dbId || undefined,
+    song: r.song, artist: r.artist || '—',
+    energy: r.energy || 'unknown',
+    played_at: r.playedAt ? new Date(r.playedAt).toISOString() : new Date().toISOString(),
+  });
+
+  // Snapshot and clear deleted-ID queues before the async request
+  const deleted_pool = _deletedPoolIds.splice(0);
+  const deleted_flagged = _deletedFlaggedIds.splice(0);
+  const deleted_denied = _deletedDeniedIds.splice(0);
+  const deleted_history = _deletedHistoryIds.splice(0);
+
+  const res = await fetch('/.netlify/functions/dj-state', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pool, history, flagged, denied, settings }),
-  }).catch(() => {}); // best-effort
+    body: JSON.stringify({
+      pool: pool.map(mapPool),
+      history: history.map(mapHistory),
+      flagged: flagged.map(mapFlagged),
+      denied: denied.map(mapDenied),
+      settings,
+      deleted_pool, deleted_flagged, deleted_denied, deleted_history,
+    }),
+  }).catch((err) => {
+    // Put deleted IDs back so they get retried on the next save
+    _deletedPoolIds.unshift(...deleted_pool);
+    _deletedFlaggedIds.unshift(...deleted_flagged);
+    _deletedDeniedIds.unshift(...deleted_denied);
+    _deletedHistoryIds.unshift(...deleted_history);
+  });
 }
 
 // ── GUEST REQUESTS (live polling) ──
@@ -2808,6 +2864,7 @@ async function processAndAdd(song, artist) {
 // ── POOL ACTIONS ──
 function approveFlag(idx) {
   const item = flagged[idx];
+  if (item && item._dbId) _deletedFlaggedIds.push(item._dbId);
   const approved = {
     song: item.song, artist: item.artist, hadLyrics: item.hadLyrics,
     reputationOverview: item.reputationOverview || 'Manually approved after review.',
@@ -2818,6 +2875,7 @@ function approveFlag(idx) {
     energy: item.energy || 'unknown',
     vibeNote: item.vibeNote || '',
     addedAt: item.addedAt || Date.now()
+    // no _dbId — this is a new pool row
   };
   pool.push(approved);
   scanCache[normalizeSongKey(item.song, item.artist)] = { status: 'approved', ...approved };
@@ -2825,12 +2883,21 @@ function approveFlag(idx) {
   renderPool(); renderFlagged(); saveAppState(); updateStorageHint(); updatePickStats();
 }
 
-function removeFlag(idx) { flagged.splice(idx, 1); renderFlagged(); saveAppState(); }
-function removeFromPool(idx) { pool.splice(idx, 1); renderPool(); saveAppState(); updatePickStats(); }
+function removeFlag(idx) {
+  const item = flagged[idx];
+  if (item && item._dbId) _deletedFlaggedIds.push(item._dbId);
+  flagged.splice(idx, 1); renderFlagged(); saveAppState();
+}
+function removeFromPool(idx) {
+  const item = pool[idx];
+  if (item && item._dbId) _deletedPoolIds.push(item._dbId);
+  pool.splice(idx, 1); renderPool(); saveAppState(); updatePickStats();
+}
 
 // ── DENY ACTIONS ──
 function denyFromPool(idx) {
   const item = pool[idx];
+  if (item && item._dbId) _deletedPoolIds.push(item._dbId);
   addToDenied(item);
   pool.splice(idx, 1);
   renderPool(); renderDenied(); saveAppState(); updatePickStats();
@@ -2838,6 +2905,7 @@ function denyFromPool(idx) {
 
 function denyFromFlagged(idx) {
   const item = flagged[idx];
+  if (item && item._dbId) _deletedFlaggedIds.push(item._dbId);
   addToDenied(item);
   flagged.splice(idx, 1);
   renderFlagged(); renderDenied(); saveAppState();
@@ -2857,6 +2925,7 @@ function addToDenied(item) {
 
 function removeFromDenied(idx) {
   const item = denied[idx];
+  if (item && item._dbId) _deletedDeniedIds.push(item._dbId);
   // Remove from denied
   denied.splice(idx, 1);
   // Clear denied status from cache so it can be re-processed if submitted again
@@ -2867,10 +2936,12 @@ function removeFromDenied(idx) {
 
 function restoreFromDenied(idx) {
   const item = denied[idx];
+  if (item && item._dbId) _deletedDeniedIds.push(item._dbId);
   const key = normalizeSongKey(item.song, item.artist);
-  // Restore to approved pool without re-scanning
+  // Restore to approved pool without re-scanning (strip _dbId so upsert creates a new row)
   const restored = { ...item, addedAt: Date.now() };
   delete restored.deniedCount;
+  delete restored._dbId;
   pool.push(restored);
   denied.splice(idx, 1);
   scanCache[key] = { status: 'approved', ...restored };

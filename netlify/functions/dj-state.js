@@ -70,22 +70,58 @@ exports.handler = async (event) => {
     const { pool = [], history = [], flagged = [], denied = [], settings = {} } = body;
     const svcH = { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' };
 
-    // Delete existing rows for this DJ, then reinsert
+    // Upsert rows by spotify_id (or song+artist for rows without spotify_id).
+    // We no longer DELETE+reinsert — that pattern wiped auto-scanned songs
+    // that landed in Supabase between the last loadState and this save.
+    // Instead: upsert rows the client knows about, leaving any rows it doesn't
+    // know about (freshly auto-scanned) untouched.
+    // Rows the user explicitly deleted are handled by passing their ids in
+    // the separate `deleted_ids` payload fields.
+
+    const { deleted_pool = [], deleted_flagged = [], deleted_denied = [], deleted_history = [] } = body;
+
+    // Delete only the rows explicitly removed by the user
+    const deleteById = async (table, ids) => {
+      if (!ids.length) return;
+      // Supabase: DELETE /rest/v1/table?id=in.(id1,id2,...)
+      await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=in.(${ids.join(',')})&dj_id=eq.${userId}`, {
+        method: 'DELETE', headers: svcH,
+      });
+    };
+
     await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/dj_pool?dj_id=eq.${userId}`, { method: 'DELETE', headers: svcH }),
-      fetch(`${SUPABASE_URL}/rest/v1/dj_history?dj_id=eq.${userId}`, { method: 'DELETE', headers: svcH }),
-      fetch(`${SUPABASE_URL}/rest/v1/dj_flagged?dj_id=eq.${userId}`, { method: 'DELETE', headers: svcH }),
-      fetch(`${SUPABASE_URL}/rest/v1/dj_denied?dj_id=eq.${userId}`, { method: 'DELETE', headers: svcH }),
+      deleteById('dj_pool', deleted_pool),
+      deleteById('dj_history', deleted_history),
+      deleteById('dj_flagged', deleted_flagged),
+      deleteById('dj_denied', deleted_denied),
     ]);
 
-    const toInsert = (rows, extra = {}) => rows.map(r => ({ ...extra, dj_id: userId, ...r, id: undefined }));
+    // Upsert known rows (on-conflict merge by id).
+    // Rows with id → update in place. Rows without id → insert as new rows.
+    // JSON.stringify automatically strips undefined, so { id: undefined } serialises without id.
+    const toUpsert = (rows) => rows
+      .filter(r => r && r.song)
+      .map(r => {
+        const row = { ...r, dj_id: userId };
+        if (row.id === undefined || row.id === null) delete row.id;
+        return row;
+      });
+
+    const upsertTable = async (table, rows) => {
+      if (!rows.length) return;
+      await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+        method: 'POST',
+        headers: { ...svcH, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(rows),
+      });
+    };
 
     await Promise.all([
-      pool.length && fetch(`${SUPABASE_URL}/rest/v1/dj_pool`, { method: 'POST', headers: { ...svcH, 'Prefer': 'return=minimal' }, body: JSON.stringify(toInsert(pool)) }),
-      history.length && fetch(`${SUPABASE_URL}/rest/v1/dj_history`, { method: 'POST', headers: { ...svcH, 'Prefer': 'return=minimal' }, body: JSON.stringify(toInsert(history)) }),
-      flagged.length && fetch(`${SUPABASE_URL}/rest/v1/dj_flagged`, { method: 'POST', headers: { ...svcH, 'Prefer': 'return=minimal' }, body: JSON.stringify(toInsert(flagged)) }),
-      denied.length && fetch(`${SUPABASE_URL}/rest/v1/dj_denied`, { method: 'POST', headers: { ...svcH, 'Prefer': 'return=minimal' }, body: JSON.stringify(toInsert(denied)) }),
-    ].filter(Boolean));
+      upsertTable('dj_pool', toUpsert(pool)),
+      upsertTable('dj_history', toUpsert(history)),
+      upsertTable('dj_flagged', toUpsert(flagged)),
+      upsertTable('dj_denied', toUpsert(denied)),
+    ]);
 
     // Upsert settings
     await fetch(`${SUPABASE_URL}/rest/v1/dj_settings`, {
