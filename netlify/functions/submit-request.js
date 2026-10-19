@@ -69,7 +69,7 @@ exports.handler = async (event) => {
 
   // Kick off auto-scan in the background — don't await so guest gets instant response
   const baseUrl = process.env.URL || 'https://dj-you.netlify.app';
-  fetch(`${baseUrl}/.netlify/functions/auto-scan-request`, {
+  fetch(`${baseUrl}/.netlify/functions/auto-scan-request-background`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
