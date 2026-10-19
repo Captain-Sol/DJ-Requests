@@ -3260,7 +3260,7 @@ function togglePlayed(idx) {
 // (Supabase puts #access_token=...&type=recovery|magiclink in the URL)
 (function checkHashToken() {
   const hash = window.location.hash;
-  if (!hash.includes('type=recovery') && !hash.includes('type=signup') && !hash.includes('type=magiclink')) return;
+  if (!hash.includes('access_token')) return;  // nothing to handle
   const params = new URLSearchParams(hash.replace(/^#/, ''));
   const token = params.get('access_token');
   const refreshToken = params.get('refresh_token');
@@ -3276,8 +3276,11 @@ function togglePlayed(idx) {
     return;
   }
 
-  if (type === 'magiclink' && token) {
+  // magiclink, signup, or any other token type → try to auto-sign in
+  if (token) {
     // Auto-sign in via magic link (used by admin impersonation)
+    // Hide the login gate immediately — don't wait for the async exchange
+    document.getElementById('login-gate').style.display = 'none';
     const statusEl = document.getElementById('login-status');
     if (statusEl) statusEl.textContent = 'Signing in…';
     fetch('/.netlify/functions/auth-token-exchange', {
@@ -3288,6 +3291,7 @@ function togglePlayed(idx) {
       .then(r => r.json())
       .then(async data => {
         if (!data.access_token) {
+          document.getElementById('login-gate').style.display = 'flex';
           if (statusEl) statusEl.textContent = 'Sign-in link expired. Please log in.';
           return;
         }
@@ -3309,6 +3313,7 @@ function togglePlayed(idx) {
       })
       .catch(err => {
         console.error('Magic link exchange failed:', err);
+        document.getElementById('login-gate').style.display = 'flex';
         if (statusEl) statusEl.textContent = 'Sign-in failed. Please log in manually.';
       });
   }
