@@ -1563,6 +1563,7 @@ renderDenied = function() {
       <span id="dj-display-name" style="display:none;font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
       <button id="guest-link-btn" onclick="showGuestQR()" style="display:none;font-size:11px;background:rgba(109,40,217,0.2);border:1px solid var(--accent);color:var(--accent-hi);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;white-space:nowrap;flex-shrink:0;">🔗 Guest link</button>
       <a id="admin-link" href="/admin.html" style="display:none;font-size:11px;color:var(--accent-hi);text-decoration:none;background:rgba(109,40,217,0.2);border:1px solid var(--accent);border-radius:6px;padding:4px 10px;font-weight:600;white-space:nowrap;flex-shrink:0;">Admin</a>
+      <a id="back-to-admin-btn" href="/admin.html" style="display:none;font-size:11px;color:#fbbf24;text-decoration:none;background:rgba(251,191,36,0.15);border:1px solid #fbbf24;border-radius:6px;padding:4px 10px;font-weight:600;white-space:nowrap;flex-shrink:0;">← Admin</a>
       <button id="logout-btn" onclick="doLogout()" style="display:none;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;flex-shrink:0;">Sign out</button>
     </div>
 
@@ -3255,21 +3256,61 @@ function togglePlayed(idx) {
 }
 
 // ── STARTUP ──
-// Check if this is a password reset link (Supabase puts #access_token=...&type=recovery in the URL)
-(function checkPasswordReset() {
+// Check if this is a password reset or magic-link sign-in
+// (Supabase puts #access_token=...&type=recovery|magiclink in the URL)
+(function checkHashToken() {
   const hash = window.location.hash;
-  if (!hash.includes('type=recovery') && !hash.includes('type=signup')) return;
+  if (!hash.includes('type=recovery') && !hash.includes('type=signup') && !hash.includes('type=magiclink')) return;
   const params = new URLSearchParams(hash.replace(/^#/, ''));
   const token = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
   const type = params.get('type');
+  // Clear the hash immediately so tokens don't linger in the URL
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+
   if (type === 'recovery' && token) {
     // Show reset screen, hide login gate
     document.getElementById('login-gate').style.display = 'none';
     document.getElementById('reset-gate').style.display = 'flex';
-    // Store token temporarily for the update call
     window._resetToken = token;
-    // Clear the hash so it's not reused
-    history.replaceState(null, '', window.location.pathname + window.location.search);
+    return;
+  }
+
+  if (type === 'magiclink' && token) {
+    // Auto-sign in via magic link (used by admin impersonation)
+    const statusEl = document.getElementById('login-status');
+    if (statusEl) statusEl.textContent = 'Signing in…';
+    fetch('/.netlify/functions/auth-token-exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: token, refresh_token: refreshToken || null }),
+    })
+      .then(r => r.json())
+      .then(async data => {
+        if (!data.access_token) {
+          if (statusEl) statusEl.textContent = 'Sign-in link expired. Please log in.';
+          return;
+        }
+        saveSession(data);
+        clearAppLocalStorage();
+        document.getElementById('login-gate').style.display = 'none';
+        // Show "Back to Admin" button instead of normal admin-link (this is an impersonation session)
+        const backBtn = document.getElementById('back-to-admin-btn');
+        if (backBtn) backBtn.style.display = 'inline-flex';
+        applyDJName(data.profile);
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+        const guestBtn = document.getElementById('guest-link-btn');
+        if (guestBtn && data.profile?.slug) guestBtn.style.display = 'inline-flex';
+        if (statusEl) statusEl.textContent = 'Loading data…';
+        try { await loadStateFromSupabase(); } catch(e) { console.error('State load failed:', e); }
+        startGuestRequestPolling();
+        if (statusEl) statusEl.textContent = '';
+      })
+      .catch(err => {
+        console.error('Magic link exchange failed:', err);
+        if (statusEl) statusEl.textContent = 'Sign-in failed. Please log in manually.';
+      });
   }
 })();
 
