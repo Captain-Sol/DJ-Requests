@@ -3265,8 +3265,8 @@ function togglePlayed(idx) {
   const token = params.get('access_token');
   const refreshToken = params.get('refresh_token');
   const type = params.get('type');
-  // Clear the hash immediately so tokens don't linger in the URL
-  history.replaceState(null, '', window.location.pathname + window.location.search);
+  // Clear the hash so tokens don't linger in the URL (best-effort — some contexts block this)
+  try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch(e) {}
 
   if (type === 'recovery' && token) {
     // Show reset screen, hide login gate
