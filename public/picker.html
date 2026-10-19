@@ -2154,6 +2154,8 @@ function stopGuestRequestPolling() {
   if (card) card.style.display = 'none';
 }
 
+let _lastGuestReqCount = null;
+
 async function pollGuestRequests() {
   const token = getToken();
   if (!token) return;
@@ -2163,12 +2165,18 @@ async function pollGuestRequests() {
     });
     if (!res.ok) return;
     const data = await res.json();
-    renderGuestRequests(data.requests || []);
+    const requests = data.requests || [];
+    renderGuestRequests(requests);
     const lastCheck = document.getElementById('guest-req-last-check');
     if (lastCheck) {
       const t = new Date();
       lastCheck.textContent = `Last checked ${t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})} · refreshes every 10 s`;
     }
+    // If pending count dropped, auto-scan finished processing — reload pool/flagged/denied
+    if (_lastGuestReqCount !== null && requests.length < _lastGuestReqCount) {
+      loadStateFromSupabase().catch(() => {});
+    }
+    _lastGuestReqCount = requests.length;
   } catch(e) { /* ignore network hiccups */ }
 }
 
