@@ -1950,6 +1950,12 @@ function savePersistToggle() {
 }
 
 // ── VIBE SETTINGS ──
+function updateEventTypeUI() {
+  const sel = document.getElementById('event-type');
+  const customInput = document.getElementById('event-type-custom');
+  if (sel && customInput) customInput.style.display = sel.value === 'custom' ? 'block' : 'none';
+}
+
 function onEventTypeChange() {
   const sel = document.getElementById('event-type').value;
   const customInput = document.getElementById('event-type-custom');
@@ -2513,25 +2519,27 @@ function toggleAutoFetch() { clickAutofetchDisk(); }
 
 function startAutoFetch() {
   stopAutoFetch();
-  const intervalSec = parseInt(document.getElementById('autofetch-interval').value, 10) || 30;
+  const intervalEl = document.getElementById('autofetch-interval');
+  const intervalSec = intervalEl ? parseInt(intervalEl.value, 10) || 30 : 30;
   const dot = document.getElementById('autofetch-dot');
   const label = document.getElementById('autofetch-label');
-  dot.classList.add('active');
-  label.textContent = `Auto-fetching every ${intervalSec}s`;
+  if (dot) dot.classList.add('active');
+  if (label) label.textContent = `Auto-fetching every ${intervalSec}s`;
   autoFetchTimer = setInterval(async () => {
-    dot.classList.remove('active');
-    dot.classList.add('fetching');
+    if (dot) dot.classList.remove('active');
+    if (dot) dot.classList.add('fetching');
     await loadSheet(true);
-    dot.classList.remove('fetching');
-    dot.classList.add('active');
+    if (dot) dot.classList.remove('fetching');
+    if (dot) dot.classList.add('active');
   }, intervalSec * 1000);
 }
 
 function stopAutoFetch() {
   if (autoFetchTimer) { clearInterval(autoFetchTimer); autoFetchTimer = null; }
   const dot = document.getElementById('autofetch-dot');
-  dot.classList.remove('active', 'fetching');
-  document.getElementById('autofetch-label').textContent = 'Auto-fetch: use the disk on the left';
+  if (dot) dot.classList.remove('active', 'fetching');
+  const lbl = document.getElementById('autofetch-label');
+  if (lbl) lbl.textContent = 'Auto-fetch: use the disk on the left';
 }
 
 function restartAutoFetch() {
