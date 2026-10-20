@@ -1688,20 +1688,7 @@ renderDenied = function() {
 
   </div>
 
-  <!-- GUEST REQUESTS (live polling from Supabase) -->
-  <div class="card guest-req-card" id="guest-requests-card" style="display:none;">
-    <div class="guest-req-header">
-      <div class="guest-req-pulse" id="guest-req-pulse"></div>
-      <div class="section-title" style="margin-bottom:0;">Guest Requests</div>
-      <span class="guest-req-badge empty" id="guest-req-count">0</span>
-      <button onclick="pollGuestRequests()" style="margin-left:auto;font-size:11px;padding:3px 8px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;">↻ Refresh</button>
-    </div>
-    <div id="guest-req-list"><span class="req-empty">No pending requests.</span></div>
-    <div class="guest-req-footer">
-      <span id="guest-req-last-check">Checking every 10 s</span>
-      <span style="margin-left:auto;">Requests auto-scan via Claude — approved land in your pool, denied are rejected, flagged need your call.</span>
-    </div>
-  </div>
+  <!-- guest requests panel removed — auto-scan handles routing silently -->
 
   <!-- APPROVED POOL -->
   <div class="pool-scene">
