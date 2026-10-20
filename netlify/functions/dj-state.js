@@ -109,11 +109,15 @@ exports.handler = async (event) => {
 
     const upsertTable = async (table, rows) => {
       if (!rows.length) return;
-      await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=id`, {
         method: 'POST',
         headers: { ...svcH, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify(rows),
       });
+      if (!res.ok) {
+        const err = await res.text();
+        console.error(`[dj-state] upsert ${table} failed: ${res.status} — ${err}`);
+      }
     };
 
     await Promise.all([

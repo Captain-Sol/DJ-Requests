@@ -2103,9 +2103,11 @@ async function loadStateFromSupabase() {
   const serverFlagged = (data.flagged || []).map(r => ({ _dbId: r.id, song: r.song, artist: r.artist, energy: r.energy, reason: r.reason, addedAt: new Date(r.added_at).getTime() }));
   const serverDenied  = (data.denied  || []).map(r => ({ _dbId: r.id, song: r.song, artist: r.artist, denyCount: r.deny_count, addedAt: new Date(r.added_at).getTime() }));
 
+  // Merge: server rows win on overlap (they carry _dbId); local-only rows are appended.
   function mergeByKey(existing, incoming) {
-    const seen = new Set(existing.map(r => normalizeSongKey(r.song, r.artist)));
-    return [...existing, ...incoming.filter(r => !seen.has(normalizeSongKey(r.song, r.artist)))];
+    const serverKeys = new Set(incoming.map(r => normalizeSongKey(r.song, r.artist)));
+    const localOnly  = existing.filter(r => !serverKeys.has(normalizeSongKey(r.song, r.artist)));
+    return [...incoming, ...localOnly];
   }
 
   pool    = mergeByKey(pool,    serverPool);
