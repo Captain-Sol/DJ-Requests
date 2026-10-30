@@ -1698,6 +1698,7 @@ renderDenied = function() {
         <div class="section-title" style="margin-bottom:0;">Approved pool</div>
         <div class="stat"><strong id="pool-count">0</strong> songs ready</div>
       </div>
+      <div id="scan-pending-note" class="hint" style="display:none; margin-top:6px;"></div>
       <div class="pool-controls">
         <label>Sort:</label>
         <select id="pool-sort" onchange="renderPool()">
@@ -2075,7 +2076,7 @@ function updatePickStats() {
 // ── STATE ──
 // ── SUPABASE SYNC ──
 let _saveTimer = null;
-async function loadStateFromSupabase() {
+async function loadStateFromSupabase({ skipSettings = false } = {}) {
   const token = getToken();
   if (!token) return;
   const res = await fetch('/.netlify/functions/dj-state', {
@@ -2107,7 +2108,7 @@ async function loadStateFromSupabase() {
   pool.forEach(r => { scanCache[normalizeSongKey(r.song, r.artist)] = { status: 'approved', ...r }; });
 
   // Apply settings (only on initial load — don't overwrite mid-session tweaks)
-  if (data.settings) {
+  if (data.settings && !skipSettings) {
     const s = data.settings;
     if (s.filter_mode) { filterMode = s.filter_mode; setFilterMode(s.filter_mode); }
     if (s.vibe_prompt !== undefined) { const vp = document.getElementById('vibe-prompt'); if (vp) vp.value = s.vibe_prompt; }
@@ -2193,6 +2194,11 @@ function startGuestRequestPolling() {
   _guestReqTimer = setInterval(pollGuestRequests, 10000);
 }
 
+// Check right away when the DJ comes back to this tab instead of waiting for the next tick.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && _guestReqTimer) syncCountsWithSupabase();
+});
+
 function stopGuestRequestPolling() {
   if (_guestReqTimer) { clearInterval(_guestReqTimer); _guestReqTimer = null; }
   const card = document.getElementById('guest-requests-card');
@@ -2204,6 +2210,7 @@ let _lastGuestReqCount = null;
 async function pollGuestRequests() {
   const token = getToken();
   if (!token) return;
+  syncCountsWithSupabase();
   try {
     const res = await fetch('/.netlify/functions/dj-requests-poll', {
       headers: { 'Authorization': `Bearer ${token}` },
@@ -2217,12 +2224,52 @@ async function pollGuestRequests() {
       const t = new Date();
       lastCheck.textContent = `Last checked ${t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})} · refreshes every 10 s`;
     }
-    // If pending count dropped, auto-scan finished processing — reload pool/flagged/denied
-    if (_lastGuestReqCount !== null && requests.length < _lastGuestReqCount) {
-      loadStateFromSupabase().catch(() => {});
-    }
     _lastGuestReqCount = requests.length;
   } catch(e) { /* ignore network hiccups */ }
+}
+
+// ── BADGE SYNC ──
+// Asks Supabase how many songs are in pool / flagged / denied (and the newest one in each).
+// If anything changed since the last check — auto-scan filed a song, another device edited
+// the lists — reload the lists so the badges match the database.
+let _lastCountsSig = null;
+let _countsSyncBusy = false;
+
+async function syncCountsWithSupabase() {
+  const token = getToken();
+  if (!token || _countsSyncBusy) return;
+  _countsSyncBusy = true;
+  try {
+    const res = await fetch('/.netlify/functions/dj-counts', {
+      headers: { 'Authorization': `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return;
+    const c = await res.json();
+    const sig = ['pool', 'flagged', 'denied']
+      .map(k => `${c[k]?.count ?? '?'}@${c[k]?.latest ?? ''}`).join('|');
+    if (_lastCountsSig !== null && sig !== _lastCountsSig) {
+      await loadStateFromSupabase({ skipSettings: true });
+    }
+    _lastCountsSig = sig;
+    setBadgeSynced(c);
+  } catch (e) { /* ignore network hiccups */ }
+  finally { _countsSyncBusy = false; }
+}
+
+// Show the server's numbers in the badges' tooltips and mark them as live.
+function setBadgeSynced(c) {
+  const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  [['pool-count', 'pool'], ['flagged-count', 'flagged'], ['denied-count', 'denied']].forEach(([id, k]) => {
+    const el = document.getElementById(id);
+    if (el && c[k]) el.title = `${c[k].count} in Supabase · synced ${t}`;
+  });
+  const pending = document.getElementById('scan-pending-note');
+  if (pending) {
+    const n = c.pending?.count || 0;
+    pending.textContent = n ? `⏳ ${n} request${n === 1 ? '' : 's'} being scanned…` : '';
+    pending.style.display = n ? '' : 'none';
+  }
 }
 
 function renderGuestRequests(requests) {
