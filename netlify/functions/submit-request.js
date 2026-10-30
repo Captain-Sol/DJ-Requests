@@ -42,7 +42,7 @@ exports.handler = async (event) => {
   // Insert the request
   const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/dj_requests`, {
     method: 'POST',
-    headers: { ...svcH, 'Prefer': 'return=minimal' },
+    headers: { ...svcH, 'Prefer': 'return=representation' },
     body: JSON.stringify({
       dj_id: djId,
       song: String(title).trim().slice(0, 200),
@@ -59,17 +59,17 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: `Failed to save request: ${err}` }) };
   }
 
-  // Fetch the new row id so auto-scan can mark it processed
-  const newRowRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/dj_requests?dj_id=eq.${djId}&song=eq.${encodeURIComponent(String(title).trim())}&status=eq.pending&order=submitted_at.desc&limit=1&select=id`,
-    { headers: svcH }
-  );
-  const newRows = await newRowRes.json().catch(() => []);
-  const requestId = newRows[0]?.id || null;
+  // The insert returns the new row, so we get its id directly (no second lookup to race)
+  const inserted = await insertRes.json().catch(() => []);
+  const requestId = inserted[0]?.id || null;
 
-  // Kick off auto-scan in the background — don't await so guest gets instant response
+  // Kick off auto-scan in the background
   const baseUrl = process.env.URL || 'https://dj-you.netlify.app';
-  fetch(`${baseUrl}/.netlify/functions/auto-scan-request-background`, {
+  // Await the hand-off: background functions answer 202 right away, so this is quick —
+  // but if we don't wait, Netlify can shut this function down before the request is sent
+  // and the song never gets scanned.
+  try {
+    await fetch(`${baseUrl}/.netlify/functions/auto-scan-request-background`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -80,7 +80,10 @@ exports.handler = async (event) => {
       spotify_id: String(spotifyId).trim(),
       spotify_url: String(spotifyUrl || '').trim(),
     }),
-  }).catch(() => {}); // fire-and-forget
+    });
+  } catch (e) {
+    console.error('[submit-request] could not start auto-scan:', e.message);
+  }
 
   return { statusCode: 200, headers, body: JSON.stringify({ ok: true, djName: djs[0].display_name }) };
 };
