@@ -171,6 +171,7 @@
   button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
   button.primary:hover:not(:disabled) { background: #7c3aed; border-color: #7c3aed; color: #fff; }
   button.sm { padding: 4px 10px; font-size: 12px; }
+  .pool-export { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid var(--border); }
   button.approve { border-color: rgba(52,211,153,0.4); color: var(--success); }
   button.approve:hover:not(:disabled) { background: rgba(52,211,153,0.1); border-color: var(--success); }
   button.remove { border-color: rgba(248,113,113,0.35); color: var(--danger); }
@@ -1718,6 +1719,11 @@ renderDenied = function() {
         </select>
       </div>
       <div id="song-list"><span style="font-size:13px;color:#bbb;">No approved songs yet.</span></div>
+      <div class="pool-export">
+        <span class="hint" style="margin:0;">Export approved songs (uses the sort &amp; filter above):</span>
+        <button class="sm" onclick="exportPoolCsv()" title="Download a .csv file — opens in Excel, Google Sheets, or Numbers">&#11015; Excel / CSV</button>
+        <button class="sm" onclick="copyPoolForSheets(this)" title="Copy as a table — paste straight into Google Sheets or Excel">&#128203; Copy for Sheets</button>
+      </div>
     </div>
     <div class="dancer-col" id="dancers-pool-right"></div>
   </div>
@@ -3006,11 +3012,65 @@ function energyBadgeHtml(energy) {
 
 // ── RENDER ──
 const ENERGY_ORDER = { high: 0, mid: 1, slow: 2, unknown: 3 };
-function renderPool() {
-  const el = document.getElementById('song-list');
-  document.getElementById('pool-count').textContent = pool.length;
-  if (!pool.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">No approved songs yet.</span>'; return; }
 
+// ── EXPORT APPROVED POOL ──
+const POOL_EXPORT_COLS = ['Song', 'Artist', 'Energy', 'Played', 'Confidence', 'Vibe note', 'Spotify link', 'Added'];
+
+function poolExportRows() {
+  return getPoolView().map(({ r }) => [
+    r.song || '',
+    r.artist && r.artist !== '—' ? r.artist : '',
+    r.energy && r.energy !== 'unknown' ? r.energy : '',
+    r.played ? 'Yes' : 'No',
+    r.confidence || '',
+    r.vibeNote || '',
+    r.spotifyUrl || '',
+    r.addedAt ? new Date(r.addedAt).toLocaleString() : '',
+  ]);
+}
+
+// Guest-typed text could start with = + - @ and be run as a formula by Excel/Sheets.
+function safeCell(v) {
+  const t = String(v ?? '').replace(/[\r\n\t]+/g, ' ');
+  return /^[=+\-@]/.test(t) ? "'" + t : t;
+}
+
+function exportPoolCsv() {
+  const rows = poolExportRows();
+  if (!rows.length) { alertNoSongs(); return; }
+  const csv = [POOL_EXPORT_COLS, ...rows]
+    .map(row => row.map(v => '"' + safeCell(v).replace(/"/g, '""') + '"').join(','))
+    .join('\r\n');
+  // BOM so Excel reads emoji / accents correctly
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dj-filtah-approved-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+async function copyPoolForSheets(btn) {
+  const rows = poolExportRows();
+  if (!rows.length) { alertNoSongs(); return; }
+  const tsv = [POOL_EXPORT_COLS, ...rows].map(row => row.map(safeCell).join('\t')).join('\n');
+  const label = btn.innerHTML;
+  try {
+    await navigator.clipboard.writeText(tsv);
+    btn.innerHTML = '&#10003; Copied — paste into a sheet';
+  } catch (e) {
+    btn.innerHTML = 'Copy blocked — use Excel / CSV';
+  }
+  setTimeout(() => { btn.innerHTML = label; }, 2500);
+}
+
+function alertNoSongs() {
+  const note = document.getElementById('scan-pending-note');
+  if (note) { note.textContent = 'No approved songs to export with the current filter.'; note.style.display = ''; setTimeout(() => { note.style.display = 'none'; }, 3000); }
+}
+
+// Approved songs as currently filtered + sorted in the pool view.
+function getPoolView() {
   const sortVal   = (document.getElementById('pool-sort')   || {}).value || 'added';
   const filterVal = (document.getElementById('pool-filter') || {}).value || 'all';
 
@@ -3027,6 +3087,15 @@ function renderPool() {
   else if (sortVal === 'energy-low') pairs.sort((a, b) => (ENERGY_ORDER[b.r.energy]??3) - (ENERGY_ORDER[a.r.energy]??3));
   else if (sortVal === 'name') pairs.sort((a, b) => a.r.song.localeCompare(b.r.song));
   else pairs.sort((a, b) => (b.r.addedAt || 0) - (a.r.addedAt || 0)); // newest first
+  return pairs;
+}
+
+function renderPool() {
+  const el = document.getElementById('song-list');
+  document.getElementById('pool-count').textContent = pool.length;
+  if (!pool.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">No approved songs yet.</span>'; return; }
+
+  let pairs = getPoolView();
 
   if (!pairs.length) { el.innerHTML = '<span style="font-size:13px;color:#bbb;">No songs match this filter.</span>'; return; }
 
